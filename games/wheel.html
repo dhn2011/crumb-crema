@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Колесо удачи — CRUMB & CREMA</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;600;700&family=Caveat:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="common.css">
+<style>
+  body{display:flex;flex-direction:column;min-height:100%;padding-bottom:calc(24px + var(--safe-b))}
+  .stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;padding:20px 16px}
+  .wheel-box{position:relative;width:min(86vw,370px);aspect-ratio:1}
+  .wheel-box::before{content:"";position:absolute;inset:-14px;border-radius:50%;background:radial-gradient(circle,rgba(196,81,47,.18),transparent 70%)}
+  #wheel{width:100%;height:100%;filter:drop-shadow(0 24px 40px rgba(43,29,20,.3))}
+  .lamp{animation:blink 1s steps(1) infinite}
+  .lamp.odd{animation-delay:.5s}
+  .spinning .lamp{animation-duration:.25s}
+  @keyframes blink{50%{fill:#5a4334}}
+  .pointer{position:absolute;left:50%;top:-14px;width:38px;height:48px;transform-origin:50% 22%;transform:translateX(-50%);z-index:2;filter:drop-shadow(0 6px 8px rgba(43,29,20,.35))}
+  .pointer.kick{animation:kick .14s ease-out}
+  @keyframes kick{50%{transform:translateX(-50%) rotate(-22deg)}}
+  .hub{position:absolute;inset:39%;border-radius:50%;background:var(--ink);display:grid;place-items:center;box-shadow:0 0 0 6px var(--surface),0 8px 18px rgba(0,0,0,.3);z-index:1;pointer-events:none}
+  .hub svg{width:56%;height:56%}
+  .spin-btn{min-width:220px;font-size:17px;box-shadow:0 18px 36px -16px rgba(196,81,47,.9)}
+  .toast{position:fixed;left:50%;top:22%;transform:translate(-50%,-20px);background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:999px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .3s,transform .4s var(--ease);z-index:50}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+  .prizes{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;padding:0 16px;font-size:12px;color:var(--muted)}
+  .prizes span{background:var(--surface);padding:5px 10px;border-radius:999px}
+</style>
+</head>
+<body>
+  <div class="g-top"><a class="g-back" href="index.html">← Игры</a><span class="g-logo">Crumb <i>&amp;</i> Crema</span><span class="g-badge">1 попытка в день</span></div>
+  <h1 class="g-title">Колесо <span>удачи</span></h1>
+  <p class="g-sub">Крутите — и заберите подарок на кассе</p>
+
+  <div class="stage">
+    <div class="wheel-box">
+      <svg class="pointer" id="pointer" viewBox="0 0 38 48"><path d="M19 47 3 12a16 16 0 1 1 32 0L19 47Z" fill="#2b1d14"/><circle cx="19" cy="14" r="6" fill="#e7a36b"/></svg>
+      <svg id="wheel" viewBox="-170 -170 340 340"></svg>
+      <div class="hub"><svg viewBox="0 0 32 32" fill="none"><path d="M9 14h12v3a6 6 0 0 1-12 0v-3Z" fill="#fffaf2"/><path d="M21 15h1.5a2 2 0 0 1 0 4H21" stroke="#fffaf2" stroke-width="1.6"/><path d="M12 8.5c0 1.2 1 1.2 1 2.4M16 8c0 1.2 1 1.2 1 2.4" stroke="#e7a36b" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+    </div>
+    <button class="btn spin-btn" id="spinBtn">Крутить!</button>
+    <div class="prizes"><span>−5…15%</span><span>🥐 круассан</span><span>☕ кофе</span><span>🍥 синнабон</span></div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+<script src="common.js"></script>
+<script>
+(() => {
+  GAME.setupBack(true);
+  const SEG = [
+    { label: '−10%', emoji: '🏷️', prize: 'Скидка 10% на заказ', w: 22, bg: '#c4512f', fg: '#fff' },
+    { label: 'Круассан', emoji: '🥐', prize: 'Круассан в подарок', w: 12, bg: '#fffaf2', fg: '#2b1d14' },
+    { label: 'Ещё раз', emoji: '🔄', again: true, w: 10, bg: '#e7a36b', fg: '#2b1d14' },
+    { label: '−15%', emoji: '🔥', prize: 'Скидка 15% на заказ', w: 8, bg: '#fffaf2', fg: '#2b1d14' },
+    { label: 'Кофе', emoji: '☕', prize: 'Капучино в подарок', w: 6, bg: '#7f8f5a', fg: '#fff' },
+    { label: 'Увы', emoji: '🙈', lose: true, w: 22, bg: '#fffaf2', fg: '#7d6b5d' },
+    { label: '−5%', emoji: '🏷️', prize: 'Скидка 5% на заказ', w: 16, bg: '#2b1d14', fg: '#fff' },
+    { label: 'Синнабон', emoji: '🍥', prize: 'Синнабон в подарок', w: 4, bg: '#fffaf2', fg: '#2b1d14' }
+  ];
+  const N = SEG.length, STEP = 360 / N, R = 150;
+  const svg = document.getElementById('wheel');
+  const pt = (a, r) => [r * Math.sin(a * Math.PI / 180), -r * Math.cos(a * Math.PI / 180)];
+
+  // draw: segment i is centred at angle i*STEP (clockwise from the top)
+  let html = `<circle r="${R + 16}" fill="#2b1d14"/><g id="rot">`;
+  SEG.forEach((s, i) => {
+    const c = i * STEP, [x0, y0] = pt(c - STEP / 2, R), [x1, y1] = pt(c + STEP / 2, R);
+    html += `<path d="M0 0L${x0} ${y0}A${R} ${R} 0 0 1 ${x1} ${y1}Z" fill="${s.bg}" stroke="#2b1d14" stroke-width="1.5"/>`;
+    // labels run along the radius (centre -> rim) so long words fit inside narrow segments
+    html += `<g transform="rotate(${c})"><text y="${-R * .9}" text-anchor="middle" dominant-baseline="middle" font-size="20">${s.emoji}</text>` +
+            `<text transform="translate(0 ${-R * .59}) rotate(-90)" text-anchor="middle" dominant-baseline="middle" font-family="Unbounded, sans-serif" font-weight="600" font-size="${s.label.length > 6 ? 12 : 15}" fill="${s.fg}">${s.label}</text></g>`;
+  });
+  html += '</g>';
+  for (let k = 0; k < 24; k++) {
+    const [x, y] = pt(k * 15, R + 8);
+    html += `<circle class="lamp${k % 2 ? ' odd' : ''}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="#ffd9a8"/>`;
+  }
+  svg.innerHTML = html;
+  const rot = document.getElementById('rot');
+  const pointer = document.getElementById('pointer');
+  const btn = document.getElementById('spinBtn');
+  const toast = msg => { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('on'); setTimeout(() => t.classList.remove('on'), 1600); };
+
+  let angle = 0, spinning = false;
+  if (GAME.playedToday('wheel')) { btn.disabled = true; btn.textContent = 'Приходите завтра ☕'; }
+
+  function spin() {
+    if (spinning) return;
+    spinning = true;
+    btn.disabled = true;
+    document.body.classList.add('spinning');
+    GAME.haptic('i', 'medium');
+    const i = SEG.indexOf(GAME.pick(SEG));
+    // land the chosen segment under the pointer, slightly off-centre so it feels natural
+    const jitter = (Math.random() - .5) * STEP * .7;
+    const base = ((-(i * STEP) - angle) % 360 + 360) % 360;
+    const target = angle + 360 * 6 + base + jitter;
+    const from = angle, dur = 5600, t0 = performance.now();
+    let lastSeg = null;
+    const ease = t => 1 - Math.pow(1 - t, 4);
+    const frame = now => {
+      const k = Math.min(1, (now - t0) / dur);
+      angle = from + (target - from) * ease(k);
+      rot.setAttribute('transform', `rotate(${angle})`);
+      // tick the pointer every time a segment border passes it
+      const seg = Math.floor(((((-angle) % 360) + 360) % 360 + STEP / 2) / STEP) % N;
+      if (seg !== lastSeg) {
+        if (lastSeg !== null) { pointer.classList.remove('kick'); void pointer.offsetWidth; pointer.classList.add('kick'); GAME.haptic('s'); }
+        lastSeg = seg;
+      }
+      if (k < 1) return requestAnimationFrame(frame);
+      done(SEG[i]);
+    };
+    requestAnimationFrame(frame);
+  }
+  function done(s) {
+    spinning = false;
+    document.body.classList.remove('spinning');
+    if (s.again) { toast('🔄 Ещё одна попытка!'); GAME.haptic('n', 'success'); btn.disabled = false; btn.textContent = 'Крутить ещё!'; return; }
+    const again = () => { btn.disabled = false; btn.textContent = 'Крутить!'; };
+    if (s.lose) GAME.showResult({ game: 'wheel', win: false, emoji: '🙈', title: 'Почти получилось!', text: 'Колесо остановилось на «Увы». Загляните завтра — будет новая попытка.', onAgain: GAME.tg ? null : again });
+    else GAME.showResult({ game: 'wheel', win: true, prize: s.prize, emoji: s.emoji, text: s.prize, onAgain: again });
+    if (GAME.tg) { btn.textContent = 'Приходите завтра ☕'; }
+  }
+  btn.addEventListener('click', spin);
+})();
+</script>
+</body>
+</html>

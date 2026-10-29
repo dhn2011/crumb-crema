@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>CRUMB & CREMA — игры и подарки</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;600;700&family=Caveat:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="common.css">
+<style>
+  body{padding-bottom:calc(40px + var(--safe-b))}
+  .hero{margin:14px 16px 0;border-radius:24px;background:var(--accent);color:#fff;padding:22px 20px;position:relative;overflow:hidden}
+  .hero .hand{color:#f8d0b4;font-size:22px}
+  .hero h1{font-family:var(--display);font-weight:500;font-size:25px;line-height:1.1;letter-spacing:-.03em;margin-top:4px;max-width:78%}
+  .hero p{opacity:.85;font-size:14px;margin-top:8px;max-width:72%}
+  .hero .gift{position:absolute;right:-6px;bottom:-10px;font-size:92px;transform:rotate(12deg);animation:wiggle 3s ease-in-out infinite}
+  @keyframes wiggle{0%,100%{transform:rotate(12deg)}50%{transform:rotate(2deg) translateY(-6px)}}
+  .list{display:grid;gap:12px;padding:18px 16px 0}
+  .card{display:flex;gap:14px;align-items:center;background:var(--surface);border-radius:22px;padding:12px;position:relative;opacity:0;transform:translateY(16px);animation:rise .6s var(--ease) forwards;transition:transform .25s var(--ease)}
+  .card:active{transform:scale(.97)}
+  .card:nth-child(2){animation-delay:.08s}
+  .card:nth-child(3){animation-delay:.16s}
+  @keyframes rise{to{opacity:1;transform:none}}
+  .art{width:96px;height:96px;flex:none;border-radius:18px;overflow:hidden;position:relative;display:grid;place-items:center}
+  .card b{display:block;font-family:var(--display);font-weight:500;font-size:17px;letter-spacing:-.02em}
+  .card small{display:block;color:var(--muted);font-size:13px;margin-top:4px}
+  .card .go{margin-left:auto;width:40px;height:40px;flex:none;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center}
+  .done{position:absolute;right:12px;top:10px;font-size:11px;font-weight:700;color:var(--sage)}
+
+  /* tiny animated previews */
+  .a-wheel{background:#f6dfd4}
+  .a-wheel .w{width:74px;height:74px;border-radius:50%;background:conic-gradient(#c4512f 0 45deg,#fffaf2 0 90deg,#7f8f5a 0 135deg,#e7a36b 0 180deg,#c4512f 0 225deg,#fffaf2 0 270deg,#2b1d14 0 315deg,#e7a36b 0);border:4px solid #2b1d14;animation:spin 6s cubic-bezier(.4,0,.2,1) infinite}
+  .a-wheel::after{content:"";position:absolute;top:8px;left:50%;transform:translateX(-50%);border:8px solid transparent;border-top:12px solid #2b1d14}
+  @keyframes spin{to{transform:rotate(1080deg)}}
+  .a-scratch{background:#2b1d14}
+  .a-scratch .s{width:76px;height:54px;border-radius:10px;background:linear-gradient(110deg,#b9aa99 0%,#e9dfd2 40%,#b9aa99 60%,#d5c9bb 100%);background-size:220% 100%;animation:shine 2.4s linear infinite;display:grid;place-items:center;font-size:11px;font-weight:700;color:#5b4c3f}
+  @keyframes shine{to{background-position:-220% 0}}
+  .a-catch{background:#efe5d6}
+  .a-catch span{position:absolute;font-size:24px;animation:drop 2.2s linear infinite}
+  .a-catch span:nth-child(1){left:16px;animation-delay:0s}
+  .a-catch span:nth-child(2){left:44px;animation-delay:.7s}
+  .a-catch span:nth-child(3){left:68px;animation-delay:1.4s}
+  .a-catch .basket{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);font-size:30px;animation:slide 2.2s ease-in-out infinite}
+  @keyframes drop{from{top:-30px}to{top:100px}}
+  @keyframes slide{50%{transform:translateX(-80%)}}
+  .rules{margin:20px 16px 0;background:var(--surface-2);border-radius:18px;padding:14px 16px;font-size:13px;color:var(--muted)}
+  .rules b{color:var(--ink)}
+</style>
+</head>
+<body>
+  <div class="g-top">
+    <span class="g-logo">Crumb <i>&amp;</i> Crema</span>
+    <span class="g-badge" id="hello">Игры и подарки</span>
+  </div>
+  <div class="hero">
+    <span class="hand">играй и выигрывай</span>
+    <h1>Подарки от кофейни каждый день</h1>
+    <p>Скидки, кофе и выпечка — забирайте на кассе по промокоду</p>
+    <span class="gift">🎁</span>
+  </div>
+  <div class="list">
+    <a class="card" href="wheel.html" data-game="wheel"><span class="art a-wheel"><span class="w"></span></span><span><b>Колесо удачи</b><small>Крути и выигрывай скидку или десерт</small></span><span class="go">→</span></a>
+    <a class="card" href="scratch.html" data-game="scratch"><span class="art a-scratch"><span class="s">СОТРИ</span></span><span><b>Скретч-карта</b><small>Сотри слой пальцем — под ним приз</small></span><span class="go">→</span></a>
+    <a class="card" href="catch.html" data-game="catch"><span class="art a-catch"><span>🥐</span><span>☕</span><span>🥐</span><span class="basket">🧺</span></span><span><b>Лови круассаны</b><small>Аркада на 45 секунд — рекорд = подарок</small></span><span class="go">→</span></a>
+  </div>
+  <div class="rules"><b>Правила:</b> один подарок в день на гостя. Промокод действует 7 дней, покажите его бариста при заказе.</div>
+
+<script src="common.js"></script>
+<script>
+  const name = (GAME.tg && GAME.tg.initDataUnsafe && GAME.tg.initDataUnsafe.user && GAME.tg.initDataUnsafe.user.first_name) || (GAME.params.get('name') || '').split(' ')[0];
+  if (name) document.getElementById('hello').textContent = `Привет, ${name}!`;
+  document.querySelectorAll('.card').forEach(c => {
+    c.href = GAME.link(c.getAttribute('href'));
+    if (GAME.playedToday(c.dataset.game)) c.insertAdjacentHTML('beforeend', '<span class="done">✓ сегодня</span>');
+  });
+</script>
+</body>
+</html>

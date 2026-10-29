@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Лови круассаны — CRUMB & CREMA</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;600;700&family=Caveat:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="common.css">
+<style>
+  body{overflow:hidden;height:100%}
+  .wrap{position:fixed;inset:0;display:flex;flex-direction:column}
+  .hud{display:flex;align-items:center;gap:10px;padding:8px 16px 10px}
+  .score{font-family:var(--display);font-weight:600;font-size:26px;min-width:64px}
+  .score small{font-family:'Manrope',sans-serif;font-size:12px;color:var(--muted);font-weight:600;display:block;line-height:1}
+  .timer{flex:1;height:10px;border-radius:10px;background:var(--surface-2);overflow:hidden}
+  .timer i{display:block;height:100%;width:100%;background:var(--accent);border-radius:10px;transform-origin:left}
+  .lives{font-size:20px;letter-spacing:2px;min-width:78px;text-align:right}
+  .field{position:relative;flex:1;margin:0 12px calc(12px + var(--safe-b));border-radius:24px;overflow:hidden;background:linear-gradient(180deg,#fffaf2 0%,#f3e7d5 100%);box-shadow:inset 0 0 0 2px rgba(43,29,20,.06)}
+  canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+  .overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;background:rgba(246,240,230,.92);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);transition:opacity .4s;z-index:2}
+  .overlay.off{opacity:0;pointer-events:none}
+  .overlay h2{font-family:var(--display);font-weight:500;font-size:26px;letter-spacing:-.03em;line-height:1.1}
+  .overlay h2 span{color:var(--accent)}
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:20px 0 22px;width:min(100%,320px)}
+  .rules div{background:var(--surface);border-radius:14px;padding:10px;font-size:13px;font-weight:600}
+  .rules div span{font-size:26px;display:block}
+  .tiers{font-size:12px;color:var(--muted);margin-top:14px;line-height:1.7}
+  .count{font-family:var(--display);font-weight:600;font-size:96px;color:var(--accent);animation:cnt .9s var(--ease)}
+  @keyframes cnt{0%{transform:scale(2);opacity:0}40%{transform:scale(1);opacity:1}100%{opacity:.2}}
+  .flash{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 0 0 rgba(217,54,62,0);transition:box-shadow .3s;z-index:1}
+  .flash.on{box-shadow:inset 0 0 60px 10px rgba(217,54,62,.55);transition:none}
+  .best{font-size:13px;color:var(--muted);margin-top:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="g-top"><a class="g-back" href="index.html">← Игры</a><span class="g-logo">Crumb <i>&amp;</i> Crema</span><span class="g-badge" id="bestBadge">Рекорд: 0</span></div>
+  <div class="hud">
+    <div class="score" id="score">0<small>очков</small></div>
+    <div class="timer"><i id="timer"></i></div>
+    <div class="lives" id="lives">❤️❤️❤️</div>
+  </div>
+  <div class="field" id="field">
+    <canvas id="cv"></canvas>
+    <div class="flash" id="flash"></div>
+    <div class="overlay" id="overlay">
+      <span class="hand" style="font-size:24px">аркада на 45 секунд</span>
+      <h2>Лови <span>круассаны</span></h2>
+      <div class="rules">
+        <div><span>🥐 ☕</span>+1 очко</div>
+        <div><span>🍥</span>+3 очка</div>
+        <div><span>🐝</span>−1 жизнь</div>
+        <div><span>🔥</span>5 подряд = бонус</div>
+      </div>
+      <button class="btn" id="playBtn" style="min-width:220px">Играть</button>
+      <p class="tiers">18+ очков — скидка 10% · 30+ — круассан · 45+ — кофе в подарок</p>
+      <p class="best" id="bestLine"></p>
+    </div>
+  </div>
+</div>
+
+<script src="common.js"></script>
+<script>
+(() => {
+  GAME.setupBack(true);
+  const field = document.getElementById('field'), cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+  const overlay = document.getElementById('overlay'), playBtn = document.getElementById('playBtn');
+  const $score = document.getElementById('score'), $timer = document.getElementById('timer'), $lives = document.getElementById('lives');
+  const GAME_TIME = 45;
+  const TYPES = [
+    { e: '🥐', pts: 1, w: 50 },
+    { e: '☕', pts: 1, w: 30 },
+    { e: '🍥', pts: 3, w: 8, gold: true },
+    { e: '🐝', bad: true, w: 14 }
+  ];
+  const storeGet = k => { try { return +localStorage.getItem(k) || 0; } catch (e) { return 0; } };
+  const storeSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+  let best = storeGet('cc-catch-best');
+  const showBest = () => {
+    document.getElementById('bestBadge').textContent = `Рекорд: ${best}`;
+    const line = document.getElementById('bestLine'); // lives in the start screen, which the countdown replaces
+    if (line) line.textContent = best ? `Ваш рекорд: ${best}` : '';
+  };
+  showBest();
+
+  let W = 0, H = 0, dpr = 1;
+  function resize() {
+    const r = field.getBoundingClientRect();
+    dpr = Math.min(2, devicePixelRatio || 1);
+    W = r.width; H = r.height;
+    cv.width = W * dpr; cv.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  resize();
+  addEventListener('resize', resize);
+
+  let running = false, items, parts, texts, score, lives, elapsed, spawnIn, px, tx, streak, shake, lastT, raf;
+  const BASKET_Y = () => H - 46;
+
+  function reset() {
+    items = []; parts = []; texts = []; score = 0; lives = 3; elapsed = 0; spawnIn = .6; streak = 0; shake = 0;
+    px = tx = W / 2;
+    $score.innerHTML = '0<small>очков</small>'; $lives.textContent = '❤️❤️❤️'; $timer.style.transform = 'scaleX(1)';
+  }
+
+  function spawn() {
+    const types = TYPES.map(t => t.bad ? { ...t, w: t.w + elapsed * .35 } : t); // more bees as time goes on
+    const t = GAME.pick(types);
+    const speed = (150 + elapsed * 5.5 + Math.random() * 70) * (H / 640);
+    items.push({ ...t, x: 30 + Math.random() * (W - 60), y: -30, vy: speed, phase: Math.random() * 6, rot: (Math.random() - .5) * 1.2, spin: (Math.random() - .5) * 2 });
+  }
+
+  function burst(x, y, gold) {
+    const colors = gold ? ['#e7a36b', '#ffd27a', '#c4512f'] : ['#d9a066', '#b97a3c', '#f0cf9b'];
+    for (let i = 0; i < 12; i++) parts.push({ x, y, vx: (Math.random() - .5) * 240, vy: -Math.random() * 220 - 40, life: .7, c: colors[i % colors.length], r: 2 + Math.random() * 3 });
+  }
+
+  function catchItem(it) {
+    if (it.bad) {
+      lives--; streak = 0; shake = 14;
+      $lives.textContent = '❤️'.repeat(Math.max(0, lives)) + '🤍'.repeat(3 - Math.max(0, lives));
+      const f = document.getElementById('flash'); f.classList.add('on'); setTimeout(() => f.classList.remove('on'), 60);
+      texts.push({ x: it.x, y: it.y, t: 'ой!', c: '#d9363e', life: .9 });
+      GAME.haptic('n', 'error');
+      if (lives <= 0) end();
+      return;
+    }
+    streak++;
+    let gain = it.pts;
+    if (streak % 5 === 0) { gain += 2; texts.push({ x: W / 2, y: H * .35, t: `🔥 Комбо ×${streak / 5}! +2`, c: '#c4512f', life: 1.1, big: true }); GAME.haptic('n', 'success'); }
+    else GAME.haptic('i', 'light');
+    score += gain;
+    $score.innerHTML = `${score}<small>очков</small>`;
+    $score.animate([{ transform: 'scale(1.25)' }, { transform: 'scale(1)' }], { duration: 250 });
+    texts.push({ x: it.x, y: it.y - 10, t: `+${it.pts}`, c: it.gold ? '#c4512f' : '#2b1d14', life: .8 });
+    burst(it.x, it.y, it.gold);
+  }
+
+  function frame(t) {
+    const dt = Math.min(.05, (t - lastT) / 1000); lastT = t;
+    if (running) {
+      elapsed += dt;
+      $timer.style.transform = `scaleX(${Math.max(0, 1 - elapsed / GAME_TIME)})`;
+      if (elapsed >= GAME_TIME) { end(); }
+      spawnIn -= dt;
+      if (spawnIn <= 0) { spawn(); spawnIn = Math.max(.32, .85 - elapsed * .012) * (.7 + Math.random() * .6); }
+    }
+    px += (tx - px) * Math.min(1, dt * 16);
+    const by = BASKET_Y();
+    items.forEach(it => {
+      it.y += it.vy * dt;
+      it.rot += it.spin * dt;
+      if (it.bad) it.x += Math.sin(elapsed * 5 + it.phase) * 90 * dt; // bees zig-zag
+      if (running && !it.hit && it.y > by - 34 && it.y < by + 8 && Math.abs(it.x - px) < 50) { it.hit = true; catchItem(it); }
+    });
+    items = items.filter(it => !it.hit && it.y < H + 40);
+    parts.forEach(p => { p.vy += 600 * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt; });
+    parts = parts.filter(p => p.life > 0);
+    texts.forEach(s => { s.y -= 50 * dt; s.life -= dt; });
+    texts = texts.filter(s => s.life > 0);
+    shake *= .86;
+    draw();
+    raf = requestAnimationFrame(frame);
+  }
+
+  function draw() {
+    ctx.save();
+    ctx.clearRect(0, 0, W, H);
+    if (shake > .5) ctx.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake);
+    // counter top at the bottom of the field
+    ctx.fillStyle = '#e6d3ba'; ctx.fillRect(0, H - 18, W, 18);
+    ctx.fillStyle = 'rgba(43,29,20,.08)'; for (let x = 0; x < W; x += 26) ctx.fillRect(x, H - 18, 1, 18);
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    // colour emoji take the fill alpha on some platforms (Chrome/Windows), so draw them with an opaque fill
+    ctx.fillStyle = '#000';
+    items.forEach(it => {
+      ctx.save(); ctx.translate(it.x, it.y); ctx.rotate(it.rot);
+      if (it.gold) { ctx.shadowColor = 'rgba(231,163,107,.9)'; ctx.shadowBlur = 18; }
+      ctx.font = '38px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+      ctx.fillText(it.e, 0, 0);
+      ctx.restore();
+    });
+    parts.forEach(p => { ctx.globalAlpha = Math.max(0, p.life / .7); ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill(); });
+    ctx.globalAlpha = 1;
+    // basket with a soft shadow
+    const by = BASKET_Y();
+    ctx.fillStyle = 'rgba(43,29,20,.15)'; ctx.beginPath(); ctx.ellipse(px, H - 16, 40, 7, 0, 0, 7); ctx.fill();
+    ctx.font = '62px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+    ctx.fillStyle = '#000';
+    ctx.fillText('🧺', px, by);
+    texts.forEach(s => {
+      ctx.globalAlpha = Math.min(1, s.life * 1.6);
+      ctx.fillStyle = s.c; ctx.font = `${s.big ? 700 : 800} ${s.big ? 22 : 20}px Manrope, sans-serif`;
+      ctx.fillText(s.t, s.x, s.y);
+    });
+    ctx.globalAlpha = 1;
+    ctx.restore();
+  }
+
+  // controls: drag anywhere on the field, or arrow keys
+  const toX = e => { const r = cv.getBoundingClientRect(); tx = Math.max(30, Math.min(W - 30, e.clientX - r.left)); };
+  cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); toX(e); });
+  cv.addEventListener('pointermove', toX); // touch drag on phones, plain hover with a mouse
+  const keys = {};
+  addEventListener('keydown', e => { keys[e.key] = true; });
+  addEventListener('keyup', e => { keys[e.key] = false; });
+  setInterval(() => { if (keys.ArrowLeft) tx = Math.max(30, tx - 22); if (keys.ArrowRight) tx = Math.min(W - 30, tx + 22); }, 16);
+
+  function countdown(n, cb) {
+    overlay.innerHTML = `<span class="count">${n}</span>`;
+    GAME.haptic('i', 'medium');
+    setTimeout(() => n > 1 ? countdown(n - 1, cb) : cb(), 700);
+  }
+  const rulesHTML = overlay.innerHTML;
+  function start() {
+    if (GAME.playedToday('catch')) return;
+    reset();
+    overlay.classList.remove('off');
+    countdown(3, () => { overlay.classList.add('off'); running = true; });
+  }
+  function end() {
+    if (!running) return;
+    running = false;
+    if (score > best) { best = score; storeSet('cc-catch-best', best); showBest(); }
+    const tier = score >= 45 ? { p: 'Капучино в подарок', e: '☕' } : score >= 30 ? { p: 'Круассан в подарок', e: '🥐' } : score >= 18 ? { p: 'Скидка 10% на заказ', e: '🏷️' } : null;
+    const again = () => { overlay.innerHTML = rulesHTML; overlay.classList.remove('off'); document.getElementById('playBtn').onclick = start; showBest(); };
+    setTimeout(() => {
+      if (tier) GAME.showResult({ game: 'catch', win: true, prize: tier.p, emoji: tier.e, title: `${score} очков!`, text: `Отличная реакция! Ваш приз: ${tier.p}`, onAgain: again });
+      else GAME.showResult({ game: 'catch', win: false, emoji: '🐝', title: `${score} очков`, text: 'Для подарка нужно 18+. Ещё чуть-чуть!', onAgain: GAME.tg ? null : again });
+    }, 400);
+  }
+  playBtn.onclick = start;
+  if (GAME.playedToday('catch')) { playBtn.disabled = true; playBtn.textContent = 'Приходите завтра ☕'; }
+  document.addEventListener('visibilitychange', () => { if (document.hidden) lastT = performance.now(); });
+  reset();
+  lastT = performance.now();
+  raf = requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
