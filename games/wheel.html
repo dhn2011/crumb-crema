@@ -51,25 +51,69 @@
 <script>
 (() => {
   GAME.setupBack(true);
-  const SEG = [
-    { label: '−10%', icon: 'percent', prize: 'Скидка 10% на заказ', w: 22, bg: '#c4512f', fg: '#fff' },
-    { label: 'Круассан', icon: 'croissant', prize: 'Круассан в подарок', w: 12, bg: '#fffaf2', fg: '#2b1d14' },
-    { label: 'Ещё раз', icon: 'gift', again: true, w: 10, bg: '#e7a36b', fg: '#2b1d14' },
-    { label: '−15%', icon: 'percent', prize: 'Скидка 15% на заказ', w: 8, bg: '#fffaf2', fg: '#2b1d14' },
-    { label: 'Кофе', icon: 'cup', prize: 'Капучино в подарок', w: 6, bg: '#7f8f5a', fg: '#fff' },
-    { label: 'Увы', icon: 'moon', lose: true, w: 22, bg: '#fffaf2', fg: '#7d6b5d' },
-    { label: '−5%', icon: 'percent', prize: 'Скидка 5% на заказ', w: 16, bg: '#2b1d14', fg: '#fff' },
-    { label: 'Синнабон', icon: 'swirl', prize: 'Синнабон в подарок', w: 4, bg: '#fffaf2', fg: '#2b1d14' }
-  ];
+  // one wheel, four businesses: ?skin=barber|auto|dental re-themes it for the showcase (Telegram always uses the cafe)
+  const seg = (label, prize, w, bg, fg, icon = 'percent') => ({ label, prize, w, bg, fg, icon });
+  const SKINS = {
+    cafe: {
+      brand: 'Crumb <i>&amp;</i> Crema', sub: 'Крутите — и заберите подарок на кассе',
+      rim: '#2b1d14', pointer: '#2b1d14', pin: '#e7a36b', lamp: '#ffd9a8', btnInk: '#fff', vars: {},
+      pills: ['скидки 5–15%', 'круассан', 'капучино', 'синнабон'],
+      seg: [seg('−10%', 'Скидка 10% на заказ', 22, '#c4512f', '#fff'), seg('Круассан', 'Круассан в подарок', 12, '#fffaf2', '#2b1d14', 'croissant'),
+        { label: 'Ещё раз', again: true, w: 10, bg: '#e7a36b', fg: '#2b1d14' }, seg('−15%', 'Скидка 15% на заказ', 8, '#fffaf2', '#2b1d14'),
+        seg('Кофе', 'Капучино в подарок', 6, '#7f8f5a', '#fff', 'cup'), { label: 'Увы', lose: true, w: 22, bg: '#fffaf2', fg: '#7d6b5d' },
+        seg('−5%', 'Скидка 5% на заказ', 16, '#2b1d14', '#fff'), seg('Синнабон', 'Синнабон в подарок', 4, '#fffaf2', '#2b1d14', 'swirl')]
+    },
+    barber: {
+      brand: 'Brass <i>&amp;</i> Blade', sub: 'Крутите — подарок применим при следующей стрижке',
+      rim: '#c9a36a', pointer: '#c9a36a', pin: '#0b0a09', lamp: '#ffe7b8', btnInk: '#120f0b',
+      vars: { '--bg': '#0b0a09', '--surface': '#171411', '--surface-2': '#211d19', '--ink': '#f2ede4', '--muted': '#9a9186', '--accent': '#c9a36a' },
+      pills: ['скидки до 20%', 'укладка', 'бритьё', 'уход за бородой'],
+      seg: [seg('−10%', 'Скидка 10% на стрижку', 22, '#c9a36a', '#120f0b'), seg('Укладка', 'Укладка в подарок', 12, '#211d19', '#f2ede4', 'gift'),
+        { label: 'Ещё раз', again: true, w: 10, bg: '#8a6a3c', fg: '#f2ede4' }, seg('−20%', 'Скидка 20% на стрижку', 6, '#211d19', '#f2ede4'),
+        seg('Бритьё', 'Королевское бритьё в подарок', 4, '#e2c792', '#120f0b', 'gift'), { label: 'Увы', lose: true, w: 22, bg: '#211d19', fg: '#9a9186' },
+        seg('−5%', 'Скидка 5% на стрижку', 16, '#f2ede4', '#120f0b'), seg('Борода', 'Уход за бородой в подарок', 8, '#211d19', '#f2ede4', 'gift')]
+    },
+    auto: {
+      brand: 'GLOSS<i>WORKS</i>', sub: 'Крутите — подарок применим при следующем визите',
+      rim: '#2a2d32', pointer: '#ff6a1a', pin: '#0c0d0f', lamp: '#ffb27a', btnInk: '#0c0d0f',
+      vars: { '--bg': '#0c0d0f', '--surface': '#16181b', '--surface-2': '#1f2226', '--ink': '#f1f2f4', '--muted': '#8b9099', '--accent': '#ff6a1a' },
+      pills: ['скидки до 15%', 'антидождь', 'мойка', 'озонирование'],
+      seg: [seg('−10%', 'Скидка 10% на детейлинг', 22, '#ff6a1a', '#0c0d0f'), seg('Антидождь', 'Антидождь в подарок', 12, '#1f2226', '#f1f2f4', 'gift'),
+        { label: 'Ещё раз', again: true, w: 10, bg: '#3a3d43', fg: '#f1f2f4' }, seg('−15%', 'Скидка 15% на полировку', 8, '#1f2226', '#f1f2f4'),
+        seg('Мойка', 'Детейлинг-мойка в подарок', 5, '#f1f2f4', '#0c0d0f', 'gift'), { label: 'Увы', lose: true, w: 22, bg: '#1f2226', fg: '#8b9099' },
+        seg('−5%', 'Скидка 5% на любую услугу', 16, '#ffb27a', '#0c0d0f'), seg('Озон', 'Озонирование в подарок', 5, '#1f2226', '#f1f2f4', 'gift')]
+    },
+    dental: {
+      brand: 'Lumio <i>Dental</i>', sub: 'Крутите — подарок применим на следующем приёме',
+      rim: '#0f1c2b', pointer: '#0f1c2b', pin: '#3aa8e0', lamp: '#bfe6fb', btnInk: '#fff',
+      vars: { '--bg': '#f3f7fa', '--surface': '#ffffff', '--surface-2': '#e7eef3', '--ink': '#0f1c2b', '--muted': '#6a7888', '--accent': '#3aa8e0' },
+      pills: ['скидки до 15%', 'профчистка', 'осмотр', 'щётка'],
+      seg: [seg('−10%', 'Скидка 10% на лечение', 22, '#3aa8e0', '#fff'), seg('Чистка', 'Скидка 50% на профчистку', 10, '#ffffff', '#0f1c2b', 'gift'),
+        { label: 'Ещё раз', again: true, w: 10, bg: '#7cc8ef', fg: '#0f1c2b' }, seg('−15%', 'Скидка 15% на отбеливание', 8, '#ffffff', '#0f1c2b'),
+        seg('Осмотр', 'Бесплатный осмотр и план лечения', 14, '#0f1c2b', '#fff', 'gift'), { label: 'Увы', lose: true, w: 20, bg: '#ffffff', fg: '#6a7888' },
+        seg('−5%', 'Скидка 5% на любые услуги', 14, '#e3f3fc', '#0f1c2b'), seg('Щётка', 'Электрическая щётка в подарок', 2, '#ffffff', '#0f1c2b', 'gift')]
+    }
+  };
+  const SKIN = (!GAME.tg && SKINS[GAME.params.get('skin')]) || SKINS.cafe;
+  const SEG = SKIN.seg.map(s => s.lose ? { ...s, icon: 'moon' } : s);
+  Object.entries(SKIN.vars).forEach(([k, v]) => document.documentElement.style.setProperty(k, v));
+  document.querySelectorAll('.g-logo').forEach(e => { e.innerHTML = SKIN.brand; });
+  document.querySelector('.g-sub').textContent = SKIN.sub;
+  document.querySelector('.prizes').innerHTML = SKIN.pills.map(p => `<span>${p}</span>`).join('');
+  document.querySelector('#pointer path').setAttribute('fill', SKIN.pointer);
+  document.querySelector('#pointer circle').setAttribute('fill', SKIN.pin);
+  document.querySelector('.hub').style.background = SKIN.rim;
+  document.getElementById('spinBtn').style.color = SKIN.btnInk;
+  if (SKIN !== SKINS.cafe) document.querySelector('.hub').innerHTML = `<span style="font-family:Unbounded,sans-serif;font-weight:600;font-size:13px;color:${SKIN.pointer === SKIN.rim ? SKIN.pin : SKIN.pointer}">${SKIN.brand.replace(/<[^>]+>/g, '').replace('&amp;', '&').split(/[\s&]+/).filter(Boolean).map(w => w[0]).join('').slice(0, 2)}</span>`;
   const N = SEG.length, STEP = 360 / N, R = 150;
   const svg = document.getElementById('wheel');
   const pt = (a, r) => [r * Math.sin(a * Math.PI / 180), -r * Math.cos(a * Math.PI / 180)];
 
   // draw: segment i is centred at angle i*STEP (clockwise from the top)
-  let html = `<circle r="${R + 16}" fill="#2b1d14"/><g id="rot">`;
+  let html = `<circle r="${R + 16}" fill="${SKIN.rim}"/><g id="rot">`;
   SEG.forEach((s, i) => {
     const c = i * STEP, [x0, y0] = pt(c - STEP / 2, R), [x1, y1] = pt(c + STEP / 2, R);
-    html += `<path d="M0 0L${x0} ${y0}A${R} ${R} 0 0 1 ${x1} ${y1}Z" fill="${s.bg}" stroke="#2b1d14" stroke-width="1.5"/>`;
+    html += `<path d="M0 0L${x0} ${y0}A${R} ${R} 0 0 1 ${x1} ${y1}Z" fill="${s.bg}" stroke="${SKIN.rim}" stroke-width="1.5"/>`;
     // labels run along the radius (centre -> rim) so long words fit inside narrow segments
     html += `<g transform="rotate(${c})">` +
             `<text transform="translate(0 ${-R * .58}) rotate(-90)" text-anchor="middle" dominant-baseline="middle" font-family="Unbounded, sans-serif" font-weight="600" font-size="${s.label.length > 6 ? 14 : 18}" fill="${s.fg}">${s.label}</text></g>`;
@@ -77,7 +121,7 @@
   html += '</g>';
   for (let k = 0; k < 24; k++) {
     const [x, y] = pt(k * 15, R + 8);
-    html += `<circle class="lamp${k % 2 ? ' odd' : ''}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="#ffd9a8"/>`;
+    html += `<circle class="lamp${k % 2 ? ' odd' : ''}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="${SKIN.lamp}"/>`;
   }
   svg.innerHTML = html;
   const rot = document.getElementById('rot');
