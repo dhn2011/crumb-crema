@@ -33,7 +33,7 @@
   .hand{font-family:'Caveat',cursive;font-weight:700;color:var(--accent)}
 
   .screens{position:relative;height:100%;overflow:hidden}
-  .screen{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;opacity:0;transform:translateX(40px);pointer-events:none;transition:opacity .45s var(--ease),transform .55s var(--ease)}
+  .screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;opacity:0;transform:translateX(40px);pointer-events:none;transition:opacity .45s var(--ease),transform .55s var(--ease)}
   .screen.active{opacity:1;transform:none;pointer-events:auto}
   .screen.left{transform:translateX(-40px)}
 
@@ -142,6 +142,16 @@
   .field .tgbtn{position:absolute;right:8px;top:8px;height:38px;padding:0 12px;border-radius:10px;background:var(--accent-soft);color:var(--accent);font-size:13px;font-weight:700}
   .field input:has(+ .tgbtn:not([style*="none"])){padding-right:138px}
   .field.sel::after{content:"";position:absolute;right:20px;top:50%;width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:translateY(-70%) rotate(45deg);pointer-events:none}
+  .geo{width:100%;display:flex;align-items:center;gap:12px;margin-top:10px;padding:12px 14px;border-radius:16px;background:var(--accent-soft);border:1.5px dashed rgba(196,81,47,.45);text-align:left;transition:background .3s,border-color .3s,transform .2s var(--ease)}
+  .geo:active{transform:scale(.98)}
+  .geo b{display:block;font-size:15px;color:var(--accent)}
+  .geo small{display:block;font-size:12px;color:var(--muted);margin-top:1px}
+  .geo-ic{width:40px;height:40px;flex:none;border-radius:12px;background:#fff;display:grid;place-items:center;font-size:20px}
+  .geo.loading .geo-ic{animation:pulse 1s ease-in-out infinite}
+  @keyframes pulse{50%{transform:scale(.85);opacity:.6}}
+  .geo.done{background:#e9eedf;border:1.5px solid var(--sage)}
+  .geo.done b{color:#56662f}
+  .geo small a{color:var(--accent);font-weight:700;text-decoration:none}
   .pickup{background:var(--surface);border-radius:16px;padding:14px 16px;margin-top:10px;font-size:14px;display:flex;gap:10px;align-items:flex-start}
   .collapse{overflow:hidden;transition:height .45s var(--ease),opacity .3s}
   .pays{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
@@ -206,6 +216,7 @@
     <div class="label">Как получить</div>
     <div class="seg" id="modeSeg"><i></i><button class="on" data-m="delivery">🛵 Доставка</button><button data-m="pickup">🥡 Самовывоз</button></div>
     <div class="collapse" id="deliveryBox">
+      <button class="geo" id="geoBtn" type="button"><span class="geo-ic">📍</span><span><b>Отправить мою геолокацию</b><small id="geoText">Курьер приедет точно по точке на карте</small></span></button>
       <div class="field" id="fAddr"><input id="address" placeholder="Улица, дом, квартира" autocomplete="street-address" maxlength="120"></div>
       <div class="field"><input id="addrNote" placeholder="Подъезд, этаж, ориентир (необязательно)" maxlength="80"></div>
     </div>
@@ -386,7 +397,8 @@
     CATS.forEach(c => { if ($('sec-' + c.id).getBoundingClientRect().top < 140) active = c.id; });
     document.querySelectorAll('.cat').forEach(b => {
       const on = b.dataset.c === active;
-      if (on && !b.classList.contains('on')) b.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+      // scroll only the chip strip; scrollIntoView would also shift the whole screen sideways
+      if (on && !b.classList.contains('on')) { const cats = $('cats'); cats.scrollTo({ left: b.offsetLeft - (cats.clientWidth - b.offsetWidth) / 2, behavior: 'smooth' }); }
       b.classList.toggle('on', on);
     });
   }, { passive: true });
@@ -570,11 +582,66 @@
     if (num) { phone.value = maskPhone(num); haptic('n', 'success'); }
   });
 
+  /* ---------- geolocation for delivery ---------- */
+  let geo = null; // {lat, lon}
+  const geoBtn = $('geoBtn'), geoText = $('geoText');
+  const mapLink = g => `https://yandex.uz/maps/?pt=${g.lon},${g.lat}&z=17&l=map`;
+  function geoFail(msg) {
+    geoBtn.classList.remove('loading');
+    geoText.textContent = msg;
+    haptic('n', 'error');
+  }
+  async function useCoords(lat, lon) {
+    geo = { lat: +lat.toFixed(6), lon: +lon.toFixed(6) };
+    geoBtn.classList.remove('loading');
+    geoBtn.classList.add('done');
+    geoBtn.querySelector('b').textContent = 'Геолокация отправлена ✓';
+    geoText.innerHTML = `Определяем адрес… · <a href="${mapLink(geo)}" target="_blank" rel="noopener">на карте</a>`;
+    $('fAddr').classList.remove('err');
+    haptic('n', 'success');
+    // turn the point into a street address for the courier (OpenStreetMap reverse geocoding)
+    try {
+      const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&accept-language=ru&zoom=18&lat=${geo.lat}&lon=${geo.lon}`);
+      const a = (await r.json()).address || {};
+      // not every point has a street (parks, new blocks): fall back to the mahalla and district
+      const place = a.road || a.pedestrian || a.square || a.neighbourhood || a.quarter || a.suburb || a.city || '';
+      const street = [place, a.house_number, !a.road && a.district].filter(Boolean).join(', ');
+      if (street && !$('address').value.trim()) $('address').value = street;
+      geoText.innerHTML = `${street || 'Точка на карте'} · <a href="${mapLink(geo)}" target="_blank" rel="noopener">проверить</a>`;
+    } catch (e) {
+      geoText.innerHTML = `Точка сохранена · <a href="${mapLink(geo)}" target="_blank" rel="noopener">на карте</a>`;
+    }
+  }
+  function browserGeo() {
+    if (!navigator.geolocation) return geoFail('Устройство не поддерживает геолокацию — укажите адрес вручную');
+    navigator.geolocation.getCurrentPosition(
+      p => useCoords(p.coords.latitude, p.coords.longitude),
+      err => geoFail(err.code === 1 ? 'Нет доступа к геолокации — разрешите его в настройках или введите адрес' : 'Не удалось определить место — введите адрес вручную'),
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+  }
+  geoBtn.onclick = () => {
+    haptic('i', 'light');
+    geoBtn.classList.add('loading');
+    geoText.textContent = 'Определяем местоположение…';
+    // Telegram's own location API (Bot API 8.0+) asks permission inside Telegram; fall back to the browser one
+    const LM = tg && tg.isVersionAtLeast && tg.isVersionAtLeast('8.0') && tg.LocationManager;
+    if (!LM) return browserGeo();
+    LM.init(() => {
+      if (!LM.isLocationAvailable) return browserGeo();
+      LM.getLocation(loc => {
+        if (loc) return useCoords(loc.latitude, loc.longitude);
+        geoFail('Нет доступа к геолокации — разрешите его для бота или введите адрес');
+        if (LM.isAccessRequested && !LM.isAccessGranted) LM.openSettings();
+      });
+    });
+  };
+
   /* ---------- submit ---------- */
   $('orderBtn').onclick = () => {
     const name = nameInput.value.trim(), digits = phone.value.replace(/\D/g, ''), address = $('address').value.trim();
     let bad = false;
-    if (mode === 'delivery' && address.length < 5) { $('fAddr').classList.add('err'); bad = true; }
+    // with a shared location the street is optional: the courier gets the pin
+    if (mode === 'delivery' && address.length < 5 && !geo) { $('fAddr').classList.add('err'); geoBtn.animate([{ transform: 'translateX(-5px)' }, { transform: 'translateX(5px)' }, { transform: 'none' }], 300); bad = true; }
     if (name.length < 2) { $('fName').classList.add('err'); bad = true; }
     if (digits.length !== 12) { $('fPhone').classList.add('err'); bad = true; }
     if (bad) { haptic('n', 'error'); return; }
@@ -582,7 +649,8 @@
     // compact payload: Telegram limits sendData to 4096 bytes
     const payload = {
       items: [...cart.values()].map(l => ({ n: ITEMS[l.id].n, o: l.opts.join(' · '), q: l.qty, p: unit(l) })),
-      mode, address: mode === 'delivery' ? [address, $('addrNote').value.trim()].filter(Boolean).join(', ') : '',
+      mode, address: mode === 'delivery' ? [address || 'По геолокации', $('addrNote').value.trim()].filter(Boolean).join(', ') : '',
+      ...(mode === 'delivery' && geo ? geo : {}),
       when: $('when').value, payment, name, phone: phone.value, comment: $('comment').value.trim()
     };
     renderTotals('doneTotals');
