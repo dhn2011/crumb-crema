@@ -1,0 +1,665 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CRUMB & CREMA — кофейня и пекарня в Ташкенте</title>
+<meta name="description" content="CRUMB & CREMA — specialty-кофе и свежая выпечка в Ташкенте. Меню, доставка и бронь столика через Telegram.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600&family=Manrope:wght@400;500;600;700&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f0e6;
+    --surface:#fffaf2;
+    --ink:#2b1d14;
+    --muted:#7d6b5d;
+    --line:rgba(43,29,20,.12);
+    --accent:#c4512f;
+    --accent-2:#e7a36b;
+    --sage:#7f8f5a;
+    --dark:#2b1d14;
+    --radius:26px;
+    --ease:cubic-bezier(.22,1,.36,1);
+    --display:'Unbounded',system-ui,sans-serif;
+    --hand:'Caveat',cursive;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  html.lenis,html.lenis body{height:auto}
+  .lenis.lenis-smooth{scroll-behavior:auto!important}
+  body{font-family:'Manrope',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;overflow-x:hidden}
+  img,video{display:block;max-width:100%}
+  a{color:inherit;text-decoration:none}
+  button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+  .container{width:min(1280px,100% - 32px);margin-inline:auto}
+  .tag{display:inline-flex;align-items:center;gap:10px;font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  .tag::before{content:"✺";font-size:16px;letter-spacing:0}
+  .h2{font-family:var(--display);font-weight:500;font-size:clamp(34px,5.4vw,76px);line-height:1.02;letter-spacing:-.03em}
+  .h2 .ac{color:var(--accent)}
+  .hand{font-family:var(--hand);font-weight:700;color:var(--accent);font-size:clamp(24px,2.4vw,34px);line-height:1}
+  .lead{color:var(--muted);font-size:clamp(16px,1.3vw,18px);max-width:520px}
+  .section{padding:clamp(90px,11vw,160px) 0;position:relative}
+
+  .btn{display:inline-flex;align-items:center;gap:12px;height:56px;padding:0 10px 0 26px;border-radius:999px;font-weight:600;font-size:16px;transition:transform .4s var(--ease),background .3s,box-shadow .4s var(--ease),color .3s}
+  .btn .ic{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;transition:transform .5s var(--ease)}
+  .btn:hover .ic{transform:rotate(-45deg)}
+  .btn-accent{background:var(--accent);color:#fff}
+  .btn-accent .ic{background:#fff;color:var(--accent)}
+  .btn-accent:hover{box-shadow:0 18px 40px -16px rgba(196,81,47,.7);transform:translateY(-2px)}
+  .btn-line{border:1.5px solid var(--ink);padding:0 26px}
+  .btn-line:hover{background:var(--ink);color:var(--bg)}
+
+  /* header: floating capsule */
+  .header{position:fixed;top:14px;left:0;right:0;z-index:50;transition:transform .5s var(--ease)}
+  .header.hidden{transform:translateY(-140%)}
+  .header .bar{width:min(1280px,100% - 24px);margin-inline:auto;display:flex;align-items:center;justify-content:space-between;height:64px;padding:0 10px 0 22px;border-radius:999px;transition:background .4s,box-shadow .4s,backdrop-filter .4s}
+  .header.scrolled .bar{background:rgba(255,250,242,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 10px 30px -18px rgba(43,29,20,.35)}
+  .logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:600;font-size:16px;letter-spacing:-.01em}
+  .logo i{font-style:normal;color:var(--accent)}
+  .logo svg{width:30px;height:30px}
+  .nav{display:flex;gap:30px;font-weight:600;font-size:15px}
+  .nav a{position:relative;padding:4px 0}
+  .nav a::after{content:"";position:absolute;left:50%;bottom:-2px;width:5px;height:5px;border-radius:50%;background:var(--accent);transform:translateX(-50%) scale(0);transition:transform .35s var(--ease)}
+  .nav a:hover::after{transform:translateX(-50%) scale(1)}
+  .header .btn{height:46px;font-size:15px;padding-left:20px}
+  .header .btn .ic{width:30px;height:30px}
+  .burger{display:none;width:46px;height:46px;border-radius:50%;background:var(--ink);color:var(--bg);place-items:center}
+
+  /* hero */
+  .hero{padding:130px 0 70px;position:relative;overflow:hidden}
+  .hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
+  .hero h1{font-family:var(--display);font-weight:500;font-size:clamp(44px,6.6vw,104px);line-height:.98;letter-spacing:-.045em;margin:24px 0 26px}
+  .hero h1 .ln{display:block;overflow:hidden;padding-bottom:.08em}
+  .hero h1 .ln > span{display:inline-block}
+  .hero h1 .ac{color:var(--accent)}
+  .hero .note{position:absolute;transform:rotate(-6deg);white-space:nowrap}
+  .hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px}
+  .hero-info{display:flex;gap:28px;margin-top:40px;font-size:14px;color:var(--muted)}
+  .hero-info b{display:block;font-family:var(--display);font-weight:500;color:var(--ink);font-size:22px}
+  .arch-wrap{position:relative;justify-self:end;width:min(100%,470px)}
+  .arch{position:relative;aspect-ratio:4/5.3;border-radius:999px 999px 28px 28px;overflow:hidden;background:#e7d9c6}
+  .arch video{width:100%;height:100%;object-fit:cover}
+  .badge{position:absolute;left:-46px;bottom:70px;width:132px;height:132px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;box-shadow:0 18px 40px -18px rgba(196,81,47,.8)}
+  .badge svg{position:absolute;inset:0;width:100%;height:100%;animation:spin 16s linear infinite}
+  .badge text{font-size:10.4px;font-weight:700;letter-spacing:.2em;fill:#fff;text-transform:uppercase}
+  .badge span{font-size:30px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .float{position:absolute;border-radius:50%;overflow:hidden;box-shadow:0 20px 40px -20px rgba(43,29,20,.5);border:5px solid var(--bg)}
+  .float img{width:100%;height:100%;object-fit:cover}
+  .f1{width:120px;height:120px;right:-30px;top:40px}
+  .f2{width:86px;height:86px;right:30px;bottom:-26px}
+
+  /* crossing bands */
+  .bands{position:relative;height:clamp(150px,18vw,230px);overflow:hidden;margin:10px 0}
+  .band{position:absolute;left:-5%;width:110%;top:50%;padding:18px 0;overflow:hidden}
+  .band.b1{background:var(--accent);color:#fff;transform:translateY(-50%) rotate(-3deg);z-index:2}
+  .band.b2{background:var(--sage);color:#f6f0e6;transform:translateY(-50%) rotate(3deg)}
+  .band-track{display:flex;width:max-content;white-space:nowrap;will-change:transform}
+  .band-track span{font-family:var(--display);font-weight:500;font-size:clamp(22px,3vw,40px);padding-right:.6em;letter-spacing:-.02em}
+
+  /* about: text with inline photos */
+  .about-text{font-family:var(--display);font-weight:400;font-size:clamp(28px,4.2vw,62px);line-height:1.18;letter-spacing:-.035em;max-width:1150px}
+  .about-text .pic{display:inline-block;width:1.9em;height:.92em;border-radius:999px;overflow:hidden;vertical-align:-.1em;margin:0 .06em}
+  .about-text .pic img{width:100%;height:100%;object-fit:cover}
+  .about-text .ac{color:var(--accent)}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:clamp(56px,7vw,96px)}
+  .stat{background:var(--surface);border-radius:var(--radius);padding:28px 26px;position:relative;overflow:hidden}
+  .stat .n{font-family:var(--display);font-weight:500;font-size:clamp(38px,4.4vw,62px);letter-spacing:-.04em;line-height:1}
+  .stat .n sup{color:var(--accent);font-size:.45em;vertical-align:top}
+  .stat p{color:var(--muted);margin-top:12px;font-size:15px}
+  .stat .hand{position:absolute;right:18px;top:16px;font-size:22px;transform:rotate(8deg)}
+
+  /* menu */
+  .menu-head{display:flex;justify-content:space-between;align-items:flex-end;gap:30px;flex-wrap:wrap;margin-bottom:34px}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:34px}
+  .tab{height:46px;padding:0 22px;border-radius:999px;border:1.5px solid var(--line);font-weight:600;font-size:15px;transition:background .3s,color .3s,border-color .3s}
+  .tab:hover{border-color:var(--ink)}
+  .tab.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .menu{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;min-height:420px}
+  .dish{background:var(--surface);border-radius:var(--radius);padding:12px 12px 18px;display:flex;flex-direction:column;transition:transform .5s var(--ease),box-shadow .5s var(--ease)}
+  .dish:hover{transform:translateY(-6px);box-shadow:0 26px 50px -30px rgba(43,29,20,.45)}
+  .dish .ph{aspect-ratio:1/1;border-radius:18px;overflow:hidden;background:#ecdfcd;position:relative}
+  .dish .ph img{width:100%;height:100%;object-fit:cover;transition:transform 1s var(--ease)}
+  .dish:hover .ph img{transform:scale(1.07) rotate(1deg)}
+  .dish .hit{position:absolute;left:10px;top:10px;background:var(--accent);color:#fff;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px}
+  .dish h3{font-family:var(--display);font-weight:500;font-size:18px;letter-spacing:-.02em;margin:16px 6px 4px}
+  .dish p{color:var(--muted);font-size:14px;margin:0 6px;flex:1}
+  .dish .row{display:flex;justify-content:space-between;align-items:center;margin:16px 6px 0}
+  .dish .pr{font-weight:700;font-size:16px}
+  .dish .add{width:42px;height:42px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-size:22px;transition:background .3s,transform .4s var(--ease)}
+  .dish .add:hover{background:var(--accent);transform:rotate(90deg)}
+  .menu-foot{display:flex;justify-content:center;margin-top:44px}
+
+  /* story (sticky) */
+  .story{display:grid;grid-template-columns:1fr 1fr;gap:clamp(30px,6vw,90px)}
+  .story-steps .step{min-height:70vh;display:flex;flex-direction:column;justify-content:center;padding:20px 0}
+  .step .num{font-family:var(--display);font-size:15px;color:var(--accent);font-weight:600}
+  .step h3{font-family:var(--display);font-weight:500;font-size:clamp(28px,3.4vw,48px);letter-spacing:-.035em;line-height:1.05;margin:16px 0 18px}
+  .step p{color:var(--muted);font-size:17px;max-width:440px}
+  .step .m-img{display:none}
+  .story-visual{position:sticky;top:12vh;height:76vh;border-radius:var(--radius);overflow:hidden;background:#e7d9c6}
+  .story-visual img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;clip-path:inset(100% 0 0 0)}
+  .story-visual img:first-child{clip-path:inset(0)}
+  .story-progress{position:absolute;left:20px;right:20px;bottom:20px;display:flex;gap:6px;z-index:2}
+  .story-progress i{flex:1;height:4px;border-radius:4px;background:rgba(255,255,255,.4);overflow:hidden;position:relative}
+  .story-progress i b{position:absolute;inset:0;background:#fff;transform:scaleX(0);transform-origin:left}
+
+  /* video band */
+  .vband{position:relative;height:clamp(420px,70vh,720px);overflow:hidden;border-radius:var(--radius)}
+  .vband video{position:absolute;left:0;top:-15%;width:100%;height:130%;object-fit:cover}
+  .vband::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(43,29,20,.65),rgba(43,29,20,.05) 60%)}
+  .vband .cap{position:absolute;z-index:2;left:clamp(20px,4vw,56px);bottom:clamp(20px,4vw,50px);color:#fff}
+  .vband .cap .hand{color:var(--accent-2);font-size:clamp(30px,3.4vw,46px)}
+  .vband .cap h2{font-family:var(--display);font-weight:500;font-size:clamp(32px,5vw,72px);letter-spacing:-.04em;line-height:1;margin-top:8px}
+
+  /* gallery */
+  .gallery{columns:3;column-gap:16px;margin-top:50px}
+  .gallery .g{break-inside:avoid;margin-bottom:16px;border-radius:var(--radius);overflow:hidden;background:#e7d9c6}
+  .gallery .g img{width:100%;transition:transform 1.2s var(--ease)}
+  .gallery .g:hover img{transform:scale(1.06)}
+
+  /* reviews */
+  .revs{overflow:hidden;margin-top:50px;-webkit-mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+  .revs .track{display:flex;gap:16px;width:max-content;animation:slide 55s linear infinite}
+  .revs:hover .track{animation-play-state:paused}
+  @keyframes slide{to{transform:translateX(-50%)}}
+  .rev{width:360px;flex:none;background:var(--surface);border-radius:var(--radius);padding:28px}
+  .rev .st{color:var(--accent);letter-spacing:2px}
+  .rev p{font-size:16px;margin:12px 0 20px}
+  .rev .who{display:flex;align-items:center;gap:12px;font-size:14px}
+  .rev .av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#fff}
+  .rev b{display:block}
+  .rev span{color:var(--muted)}
+
+  /* cta cards */
+  .cta-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:16px}
+  .cta{position:relative;border-radius:calc(var(--radius) + 6px);overflow:hidden;min-height:440px;padding:clamp(28px,4vw,52px);display:flex;flex-direction:column;justify-content:space-between}
+  .cta.order{background:var(--accent);color:#fff}
+  .cta.order .h2{color:#fff}
+  .cta > div{position:relative;z-index:1}
+  .cta.order > div{max-width:60%}
+  .cta.order img{position:absolute;right:-70px;top:50%;transform:translateY(-50%);width:42%;max-width:340px;border-radius:50%;aspect-ratio:1;object-fit:cover;border:8px solid rgba(255,255,255,.18)}
+  .cta.table{background:var(--dark);color:var(--bg)}
+  .cta.table .h2{color:var(--bg)}
+  .cta p{opacity:.85;max-width:380px;margin-top:16px;position:relative;z-index:1}
+  .cta .btn{align-self:flex-start;position:relative;z-index:1}
+  .cta.order .btn{background:#fff;color:var(--accent)}
+  .cta.order .btn .ic{background:var(--accent);color:#fff}
+  .cta.table .btn{background:var(--bg);color:var(--ink)}
+  .cta.table .btn .ic{background:var(--accent);color:#fff}
+  .cta .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px;position:relative;z-index:1}
+  .cta .chips span{border:1px solid rgba(255,255,255,.35);padding:6px 14px;border-radius:999px;font-size:13px}
+
+  footer{padding:90px 0 40px}
+  .foot{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:40px}
+  .foot h4{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+  .foot p,.foot a{display:block;font-size:15px;margin-bottom:8px}
+  .foot a:hover{color:var(--accent)}
+  .foot-big{font-family:var(--display);font-weight:600;font-size:clamp(46px,11.5vw,190px);letter-spacing:-.06em;line-height:.9;margin-top:70px;white-space:nowrap;overflow:hidden}
+  .foot-big i{font-style:normal;color:var(--accent)}
+  .foot-bottom{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;color:var(--muted);font-size:13px;margin-top:26px;padding-top:22px;border-top:1px solid var(--line)}
+
+  .m-cta{display:none}
+  .m-menu{position:fixed;inset:0;z-index:60;background:var(--accent);color:#fff;padding:110px 24px 40px;display:flex;flex-direction:column;clip-path:circle(0 at calc(100% - 40px) 46px);transition:clip-path .8s var(--ease);visibility:hidden}
+  .m-menu.open{clip-path:circle(150% at calc(100% - 40px) 46px);visibility:visible}
+  .m-menu a{font-family:var(--display);font-weight:500;font-size:36px;letter-spacing:-.03em;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.25)}
+  .m-close{position:absolute;right:20px;top:22px;width:46px;height:46px;border-radius:50%;background:#fff;color:var(--accent);font-size:24px}
+
+  @media (max-width:1024px){
+    .nav{display:none}
+    .hero-grid,.story,.cta-grid{grid-template-columns:1fr}
+    .arch-wrap{justify-self:center;margin-top:30px}
+    .hero .note{left:0!important;top:-40px!important}
+    .menu{grid-template-columns:repeat(2,1fr)}
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .gallery{columns:2}
+    .foot{grid-template-columns:1fr 1fr}
+    .story-visual{display:none}
+    .story-steps .step{min-height:0;padding:30px 0}
+    .step .m-img{display:block;border-radius:var(--radius);overflow:hidden;margin-top:22px;aspect-ratio:4/3}
+    .step .m-img img{width:100%;height:100%;object-fit:cover}
+  }
+  @media (max-width:640px){
+    .header .btn{display:none}
+    .burger{display:grid}
+    .hero{padding-top:110px}
+    .badge{width:104px;height:104px;left:-10px;bottom:40px}
+    .badge text{font-size:13px}
+    .f1{width:90px;height:90px;right:-6px}
+    .menu{gap:10px}
+    .dish{padding:8px 8px 14px}
+    .dish h3{font-size:15px;margin:12px 4px 4px}
+    .dish p{display:none}
+    .dish .row{margin:10px 4px 0}
+    .dish .pr{font-size:14px}
+    .dish .add{width:36px;height:36px;font-size:20px}
+    .cta.order > div{max-width:100%}
+    .cta.order img{width:150px;right:-40px;top:auto;bottom:-40px;transform:none;opacity:.9}
+    .cta.order .btn{margin-right:70px}
+    .gallery{columns:2;column-gap:10px}
+    .gallery .g{margin-bottom:10px}
+    .rev{width:290px}
+    .foot{grid-template-columns:1fr}
+    .m-cta{display:flex;position:fixed;left:12px;right:12px;bottom:12px;z-index:45;height:58px;border-radius:999px;background:var(--accent);color:#fff;align-items:center;justify-content:center;gap:10px;font-weight:700;box-shadow:0 16px 36px -12px rgba(196,81,47,.7);transform:translateY(130%);transition:transform .5s var(--ease)}
+    .m-cta.show{transform:none}
+    footer{padding-bottom:100px}
+  }
+</style>
+</head>
+<body>
+
+<header class="header" id="header">
+  <div class="bar">
+    <a href="#top" class="logo" aria-label="CRUMB &amp; CREMA">
+      <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="15" fill="#c4512f"/><path d="M9 14h12v3a6 6 0 0 1-12 0v-3Z" fill="#fffaf2"/><path d="M21 15h1.5a2 2 0 0 1 0 4H21" stroke="#fffaf2" stroke-width="1.6"/><path d="M12 8.5c0 1.2 1 1.2 1 2.4M16 8c0 1.2 1 1.2 1 2.4" stroke="#fffaf2" stroke-width="1.4" stroke-linecap="round"/></svg>
+      Crumb <i>&amp;</i> Crema
+    </a>
+    <nav class="nav">
+      <a href="#menu">Меню</a>
+      <a href="#story">О кофе</a>
+      <a href="#gallery">Атмосфера</a>
+      <a href="#visit">Контакты</a>
+    </nav>
+    <div style="display:flex;gap:10px;align-items:center">
+      <a href="https://t.me/CafeTash_153_bot" target="_blank" rel="noopener" class="btn btn-accent">Заказать <span class="ic"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M8 2l5 5-5 5" stroke="currentColor" stroke-width="1.6"/></svg></span></a>
+      <button class="burger" id="burger" aria-label="Меню"><svg width="18" height="12" viewBox="0 0 18 12"><path d="M0 1h18M0 11h18" stroke="currentColor" stroke-width="1.6"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<div class="m-menu" id="mMenu">
+  <button class="m-close" id="mClose" aria-label="Закрыть">×</button>
+  <a href="#menu">Меню</a>
+  <a href="#story">О кофе</a>
+  <a href="#gallery">Атмосфера</a>
+  <a href="#visit">Контакты</a>
+  <a href="https://t.me/CafeTash_153_bot" target="_blank" rel="noopener">Заказать →</a>
+</div>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container hero-grid">
+      <div style="position:relative">
+        <span class="tag h-in">Specialty coffee &amp; bakery · Ташкент</span>
+        <h1 id="heroTitle">
+          <span class="ln"><span>Кофе, ради</span></span>
+          <span class="ln"><span>которого</span></span>
+          <span class="ln"><span class="ac">встают</span> <span>рано</span></span>
+        </h1>
+        <p class="lead h-in">Зёрна свежей обжарки, круассаны из печи каждое утро и место, где хочется задержаться. Заказывай с собой или с доставкой — прямо в Telegram.</p>
+        <div class="hero-actions h-in">
+          <a href="https://t.me/CafeTash_153_bot" target="_blank" rel="noopener" class="btn btn-accent">Заказать доставку <span class="ic"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M8 2l5 5-5 5" stroke="currentColor" stroke-width="1.6"/></svg></span></a>
+          <a href="#menu" class="btn btn-line">Смотреть меню</a>
+        </div>
+        <div class="hero-info h-in">
+          <div><b>8:00</b>открываемся</div>
+          <div><b>30 мин</b>доставка</div>
+          <div><b>4.9 ★</b>820 отзывов</div>
+        </div>
+      </div>
+
+      <div class="arch-wrap" id="archWrap">
+        <div class="arch" id="arch">
+          <video autoplay muted loop playsinline preload="auto" poster="https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=900&q=70">
+            <source src="https://videos.pexels.com/video-files/6769791/6769791-hd_1280_720_24fps.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="badge" id="badge">
+          <svg viewBox="0 0 132 132"><defs><path id="circ" d="M66,66 m-50,0 a50,50 0 1,1 100,0 a50,50 0 1,1 -100,0"/></defs><text><textPath href="#circ">свежая выпечка · каждое утро · с 8:00 ·</textPath></text></svg>
+          <span>🥐</span>
+        </div>
+        <div class="float f1" data-depth="18"><img src="https://images.unsplash.com/photo-1681218079567-35aef7c8e7e4?auto=format&fit=crop&w=300&h=300&q=70" alt=""></div>
+        <div class="float f2" data-depth="-14"><img src="https://images.unsplash.com/photo-1773894480003-955c58ddf4af?auto=format&fit=crop&w=240&h=240&q=70" alt=""></div>
+        <span class="note hand" style="left:-30px;top:-34px" id="heroNote">латте-арт каждый раз разный ↓</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CROSSING BANDS -->
+  <div class="bands" aria-hidden="true">
+    <div class="band b2"><div class="band-track" data-dir="1"><span>Флэт уайт ✺ Раф ✺ Колд брю ✺ Матча ✺ Какао ✺ Лимонады ✺&nbsp;</span><span>Флэт уайт ✺ Раф ✺ Колд брю ✺ Матча ✺ Какао ✺ Лимонады ✺&nbsp;</span></div></div>
+    <div class="band b1"><div class="band-track" data-dir="-1"><span>Круассаны ✺ Синнабоны ✺ Чизкейки ✺ Панкейки ✺ Завтраки весь день ✺&nbsp;</span><span>Круассаны ✺ Синнабоны ✺ Чизкейки ✺ Панкейки ✺ Завтраки весь день ✺&nbsp;</span></div></div>
+  </div>
+
+  <!-- ABOUT -->
+  <section class="section" id="about">
+    <div class="container">
+      <span class="tag up">О нас</span>
+      <p class="about-text up" style="margin-top:26px">Мы варим <span class="pic"><img src="https://images.unsplash.com/photo-1512568400610-62da28bc8a13?auto=format&fit=crop&w=300&h=150&q=70" alt=""></span> кофе из зёрен обжарки <span class="ac">этой недели</span>, печём <span class="pic"><img src="https://images.unsplash.com/photo-1623334044303-241021148842?auto=format&fit=crop&w=300&h=150&q=70" alt=""></span> круассаны каждое утро в шесть и знаем по имени тех, кто заходит <span class="pic"><img src="https://images.unsplash.com/photo-1511081692775-05d0f180a065?auto=format&fit=crop&w=300&h=150&q=70" alt=""></span> каждый день.</p>
+      <div class="stats">
+        <div class="stat up"><div class="n"><span class="count" data-to="140">0</span></div><p>круассанов печём за утро</p><span class="hand">тёплые!</span></div>
+        <div class="stat up"><div class="n"><span class="count" data-to="6">0</span></div><p>сортов зерна на выбор</p></div>
+        <div class="stat up"><div class="n"><span class="count" data-to="5">0</span><sup>лет</sup></div><p>варим кофе в Ташкенте</p></div>
+        <div class="stat up"><div class="n"><span class="count" data-to="820">0</span><sup>+</sup></div><p>отзывов на картах</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MENU -->
+  <section class="section" id="menu" style="padding-top:0">
+    <div class="container">
+      <div class="menu-head">
+        <div>
+          <span class="tag up">Меню</span>
+          <h2 class="h2 up" style="margin-top:20px">Что сегодня <span class="ac">на витрине</span></h2>
+        </div>
+        <p class="lead up">Нажми «+», и заказ откроется в нашем Telegram-боте: доставка за 30 минут или самовывоз без очереди.</p>
+      </div>
+      <div class="tabs up" id="tabs">
+        <button class="tab on" data-cat="coffee">☕ Кофе</button>
+        <button class="tab" data-cat="drinks">🍋 Не кофе</button>
+        <button class="tab" data-cat="bakery">🥐 Выпечка</button>
+        <button class="tab" data-cat="breakfast">🍳 Завтраки</button>
+      </div>
+      <div class="menu" id="menuGrid"></div>
+      <div class="menu-foot up"><a href="https://t.me/CafeTash_153_bot" target="_blank" rel="noopener" class="btn btn-accent">Всё меню в Telegram <span class="ic"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M8 2l5 5-5 5" stroke="currentColor" stroke-width="1.6"/></svg></span></a></div>
+    </div>
+  </section>
+
+  <!-- STORY -->
+  <section class="section" id="story" style="padding-top:0">
+    <div class="container">
+      <span class="tag up">От зерна до чашки</span>
+      <h2 class="h2 up" style="margin-top:20px;max-width:820px">Почему наш капучино <span class="ac">вкуснее</span></h2>
+      <div class="story" style="margin-top:20px">
+        <div class="story-steps" id="storySteps">
+          <div class="step"><span class="num">01 / 03</span><h3>Зерно со всего мира</h3><p>Эфиопия, Колумбия, Бразилия — берём лоты у небольших ферм и обжариваем партиями по 5 кг. Никакого кофе, который пролежал полгода на складе.</p><div class="m-img"><img src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=900&q=70" alt=""></div></div>
+          <div class="step"><span class="num">02 / 03</span><h3>Бариста, а не автомат</h3><p>Каждый бариста проходит месяц обучения и сдаёт экзамен по латте-арту. Молоко взбиваем вручную — поэтому пенка шелковистая, а не пузырчатая.</p><div class="m-img"><img src="https://images.unsplash.com/photo-1507914464562-6ff4ac29692f?auto=format&fit=crop&w=900&q=70" alt=""></div></div>
+          <div class="step"><span class="num">03 / 03</span><h3>Выпечка из своей печи</h3><p>Тесто для круассанов ламинируем три дня на настоящем сливочном масле. Поэтому они хрустят снаружи и тают внутри — проверь сам.</p><div class="m-img"><img src="https://images.unsplash.com/photo-1623334044303-241021148842?auto=format&fit=crop&w=900&q=70" alt=""></div></div>
+        </div>
+        <div class="story-visual" id="storyVisual">
+          <img src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=1100&q=75" alt="">
+          <img src="https://images.unsplash.com/photo-1507914464562-6ff4ac29692f?auto=format&fit=crop&w=1100&q=75" alt="">
+          <img src="https://images.unsplash.com/photo-1623334044303-241021148842?auto=format&fit=crop&w=1100&q=75" alt="">
+          <div class="story-progress"><i><b></b></i><i><b></b></i><i><b></b></i></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIDEO BAND -->
+  <section class="container" style="padding-bottom:clamp(90px,11vw,160px)">
+    <div class="vband up" id="vband">
+      <video autoplay muted loop playsinline preload="metadata">
+        <source src="https://videos.pexels.com/video-files/3119255/3119255-hd_1920_1080_25fps.mp4" type="video/mp4">
+      </video>
+      <div class="cap">
+        <span class="hand">только что из печи</span>
+        <h2>Тёплые круассаны<br>с 8 утра</h2>
+      </div>
+    </div>
+  </section>
+
+  <!-- GALLERY -->
+  <section class="section" id="gallery" style="padding-top:0">
+    <div class="container">
+      <div class="menu-head" style="margin-bottom:0">
+        <div>
+          <span class="tag up">Атмосфера</span>
+          <h2 class="h2 up" style="margin-top:20px">Место, где хочется <span class="ac">остаться</span></h2>
+        </div>
+        <span class="hand up" style="transform:rotate(-4deg)">@crumbcrema в Instagram →</span>
+      </div>
+      <div class="gallery">
+        <div class="g gi"><img src="https://images.unsplash.com/photo-1453614512568-c4024d13c247?auto=format&fit=crop&w=700&q=70" alt="" loading="lazy"></div>
+        <div class="g gi"><img src="https://images.unsplash.com/photo-1786052596281-63149bee7ad5?auto=format&fit=crop&w=700&h=900&q=70" alt="" loading="lazy"></div>
+        <div class="g gi"><img src="https://images.unsplash.com/photo-1532713107108-dfb5d8d2fc42?auto=format&fit=crop&w=700&h=800&q=70" alt="" loading="lazy"></div>
+        <div class="g gi"><img src="https://images.unsplash.com/photo-1567880905822-56f8e06fe630?auto=format&fit=crop&w=700&h=500&q=70" alt="" loading="lazy"></div>
+        <div class="g gi"><img src="https://images.unsplash.com/photo-1650134973809-d8c3a2da59ba?auto=format&fit=crop&w=700&h=700&q=70" alt="" loading="lazy"></div>
+        <div class="g gi"><img src="https://images.unsplash.com/photo-1766426910014-63a302fa137e?auto=format&fit=crop&w=700&h=900&q=70" alt="" loading="lazy"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REVIEWS -->
+  <section class="section" style="padding-top:0">
+    <div class="container">
+      <span class="tag up">Отзывы</span>
+      <h2 class="h2 up" style="margin-top:20px">Нас <span class="ac">любят</span> за утро</h2>
+    </div>
+    <div class="revs">
+      <div class="track" id="revTrack">
+        <div class="rev"><div class="st">★★★★★</div><p>Лучший флэт уайт в Ташкенте, без шуток. А миндальный круассан — причина приходить к открытию.</p><div class="who"><div class="av" style="background:#c4512f">М</div><div><b>Мадина</b><span>завтракает здесь по субботам</span></div></div></div>
+        <div class="rev"><div class="st">★★★★★</div><p>Заказываю в офис через бота: 30 минут — и кофе ещё горячий. Очень удобно, что можно повторить прошлый заказ.</p><div class="who"><div class="av" style="background:#7f8f5a">А</div><div><b>Алексей</b><span>заказывает в офис</span></div></div></div>
+        <div class="rev"><div class="st">★★★★★</div><p>Уютно работать с ноутбуком: розетки у каждого стола, быстрый Wi-Fi и вкусная матча.</p><div class="who"><div class="av" style="background:#e7a36b">Н</div><div><b>Нилуфар</b><span>работает удалённо</span></div></div></div>
+        <div class="rev"><div class="st">★★★★★</div><p>Синнабоны как в детстве, только лучше. Дети просят заходить каждый раз, когда мы рядом.</p><div class="who"><div class="av" style="background:#2b1d14">Ш</div><div><b>Шахзод</b><span>папа двоих детей</span></div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section" id="visit" style="padding-top:0">
+    <div class="container cta-grid">
+      <div class="cta order up">
+        <div>
+          <span class="hand" style="color:#fff">голоден?</span>
+          <h2 class="h2" style="margin-top:10px">Доставка<br>за 30 минут</h2>
+          <p>Собери заказ в Telegram-боте — привезём горячим по Ташкенту или приготовим к твоему приходу.</p>
+          <div class="chips"><span>от 50 000 сум — бесплатно</span><span>оплата при получении</span></div>
+        </div>
+        <a href="https://t.me/CafeTash_153_bot" target="_blank" rel="noopener" class="btn">Открыть меню в Telegram <span class="ic"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M8 2l5 5-5 5" stroke="currentColor" stroke-width="1.6"/></svg></span></a>
+        <img src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&h=600&q=70" alt="">
+      </div>
+      <div class="cta table up">
+        <div>
+          <span class="hand">заходи в гости</span>
+          <h2 class="h2" style="margin-top:10px">Мы на Навои</h2>
+          <p>Ташкент, ул. Навои, 14 · м. Алишера Навои<br>Ежедневно 8:00 – 23:00<br>+998 71 200-33-44</p>
+        </div>
+        <a href="tel:+998712003344" class="btn">Забронировать столик <span class="ic"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M8 2l5 5-5 5" stroke="currentColor" stroke-width="1.6"/></svg></span></a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="foot">
+      <div>
+        <a href="#top" class="logo" style="margin-bottom:16px"><svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="15" fill="#c4512f"/><path d="M9 14h12v3a6 6 0 0 1-12 0v-3Z" fill="#fffaf2"/><path d="M21 15h1.5a2 2 0 0 1 0 4H21" stroke="#fffaf2" stroke-width="1.6"/><path d="M12 8.5c0 1.2 1 1.2 1 2.4M16 8c0 1.2 1 1.2 1 2.4" stroke="#fffaf2" stroke-width="1.4" stroke-linecap="round"/></svg>Crumb <i>&amp;</i> Crema</a>
+        <p style="color:var(--muted);max-width:300px">Specialty-кофе и пекарня в центре Ташкента. С любовью к утрам с 2021 года.</p>
+      </div>
+      <div><h4>Адрес</h4><p>г. Ташкент, Шайхантахурский р-н,<br>ул. Навои, 14</p><p style="color:var(--muted)">м. Алишера Навои</p></div>
+      <div><h4>Часы</h4><p>Ежедневно 8:00 – 23:00</p><p style="color:var(--muted)">доставка до 22:30</p></div>
+      <div><h4>Связь</h4><a href="tel:+998712003344">+998 71 200-33-44</a><a href="https://t.me/CafeTash_153_bot" target="_blank" rel="noopener">Telegram</a><a href="#">Instagram</a></div>
+    </div>
+    <div class="foot-big">Crumb <i>&amp;</i> Crema</div>
+    <div class="foot-bottom"><span>© 2026 CRUMB &amp; CREMA. Демонстрационный сайт.</span><span>Сварено с любовью ☕</span></div>
+  </div>
+</footer>
+
+<a href="https://t.me/CafeTash_153_bot" target="_blank" rel="noopener" class="m-cta" id="mCta">Заказать в Telegram →</a>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
+<script>
+(() => {
+  const hasGsap = window.gsap && window.ScrollTrigger;
+  const BOT = 'https://t.me/CafeTash_153_bot';
+
+  /* ---------- menu data ---------- */
+  const IMG = (id, w = 500) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&h=${w}&q=70`;
+  const MENU = {
+    coffee: [
+      { n: 'Капучино', d: 'Двойной эспрессо и шелковистая молочная пена', p: '32 000', img: '1760306081298-93e10f2be897', hit: true },
+      { n: 'Флэт уайт', d: 'Больше кофе, меньше молока — для тех, кто любит покрепче', p: '35 000', img: '1761783768352-e7f42bfa9988' },
+      { n: 'Латте', d: 'Мягкий и молочный, с сиропом на выбор', p: '34 000', img: '1509042239860-f550ce710b93' },
+      { n: 'Айс-латте', d: 'Эспрессо, холодное молоко и много льда', p: '36 000', img: '1761673930163-8d3d6d73cd7a' }
+    ],
+    drinks: [
+      { n: 'Матча латте', d: 'Японская церемониальная матча на овсяном молоке', p: '42 000', img: '1766426910014-63a302fa137e', hit: true },
+      { n: 'Айс-матча', d: 'Освежающая матча со льдом и молоком', p: '44 000', img: '1749280447307-31a68eb38673' },
+      { n: 'Лимонад', d: 'Лимон, мята и газированная вода — домашний рецепт', p: '30 000', img: '1523677011781-c91d1bbe2f9e' },
+      { n: 'Колд брю', d: 'Кофе холодной экстракции 18 часов, без горечи', p: '38 000', img: '1771210849472-84a07b2e793a' }
+    ],
+    bakery: [
+      { n: 'Круассан', d: 'Классический, на французском сливочном масле', p: '22 000', img: '1681218079567-35aef7c8e7e4', hit: true },
+      { n: 'Миндальный круассан', d: 'С франжипаном и хрустящими лепестками миндаля', p: '32 000', img: '1763207291761-e27bb059d851' },
+      { n: 'Синнабон', d: 'Корица, сливочный крем-чиз, ещё тёплый', p: '29 000', img: '1786052596281-63149bee7ad5' },
+      { n: 'Чизкейк Нью-Йорк', d: 'Нежный, сливочный, на песочной основе', p: '38 000', img: '1774988867972-98caecc776d8' }
+    ],
+    breakfast: [
+      { n: 'Панкейки', d: 'С голубикой, кленовым сиропом и сливочным маслом', p: '48 000', img: '1650134973809-d8c3a2da59ba', hit: true },
+      { n: 'Авокадо-тост', d: 'Хлеб на закваске, авокадо, яйцо пашот', p: '55 000', img: '1687276287139-88f7333c8ca4' },
+      { n: 'Банановые панкейки', d: 'С карамелизированным бананом и мёдом', p: '45 000', img: '1528207776546-365bb710ee93' },
+      { n: 'Завтрак + кофе', d: 'Любой завтрак и капучино — выгоднее на 15%', p: '68 000', img: '1600326145552-327f74b9c189' }
+    ]
+  };
+  const grid = document.getElementById('menuGrid');
+  const renderMenu = cat => {
+    grid.innerHTML = MENU[cat].map(m => `
+      <article class="dish">
+        <div class="ph"><img src="${IMG(m.img)}" alt="${m.n}" loading="lazy">${m.hit ? '<span class="hit">Хит</span>' : ''}</div>
+        <h3>${m.n}</h3><p>${m.d}</p>
+        <div class="row"><span class="pr">${m.p} сум</span><a class="add" href="${BOT}" target="_blank" rel="noopener" aria-label="Заказать ${m.n}">+</a></div>
+      </article>`).join('');
+  };
+  renderMenu('coffee');
+  // warm the cache so tab switches feel instant
+  Object.values(MENU).flat().forEach(m => { new Image().src = IMG(m.img); });
+
+  /* ---------- smooth scroll ---------- */
+  let lenis = null;
+  if (window.Lenis) {
+    lenis = new Lenis({ duration: 1.15, smoothWheel: true });
+    if (hasGsap) {
+      lenis.on('scroll', ScrollTrigger.update);
+      gsap.ticker.add(t => lenis.raf(t * 1000));
+      gsap.ticker.lagSmoothing(0);
+    } else {
+      const raf = t => { lenis.raf(t); requestAnimationFrame(raf); };
+      requestAnimationFrame(raf);
+    }
+  }
+  document.querySelectorAll('a[href^="#"]').forEach(a => a.addEventListener('click', e => {
+    const id = a.getAttribute('href');
+    const el = id === '#top' ? document.body : document.querySelector(id);
+    if (!el) return;
+    e.preventDefault();
+    closeMenu();
+    lenis ? lenis.scrollTo(el, { offset: id === '#top' ? 0 : -90, duration: 1.4 }) : el.scrollIntoView({ behavior: 'smooth' });
+  }));
+
+  /* ---------- header, menu, mobile CTA ---------- */
+  const header = document.getElementById('header');
+  const mCta = document.getElementById('mCta');
+  let lastY = 0;
+  const onScroll = () => {
+    const y = window.scrollY;
+    header.classList.toggle('scrolled', y > 30);
+    header.classList.toggle('hidden', y > 500 && y > lastY);
+    mCta.classList.toggle('show', y > 500);
+    lastY = y;
+  };
+  addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+  const menu = document.getElementById('mMenu');
+  function closeMenu() { menu.classList.remove('open'); lenis && lenis.start(); }
+  document.getElementById('burger').onclick = () => { menu.classList.add('open'); lenis && lenis.stop(); };
+  document.getElementById('mClose').onclick = closeMenu;
+  menu.querySelectorAll('a[target]').forEach(a => a.addEventListener('click', closeMenu));
+
+  /* ---------- menu tabs ---------- */
+  const tabs = document.querySelectorAll('.tab');
+  tabs.forEach(t => t.addEventListener('click', () => {
+    if (t.classList.contains('on')) return;
+    tabs.forEach(x => x.classList.toggle('on', x === t));
+    if (!hasGsap) return renderMenu(t.dataset.cat);
+    gsap.to('#menuGrid .dish', { y: 20, opacity: 0, duration: .25, stagger: .04, ease: 'power2.in', onComplete: () => {
+      renderMenu(t.dataset.cat);
+      gsap.fromTo('#menuGrid .dish', { y: 40, opacity: 0, rotate: 2 }, { y: 0, opacity: 1, rotate: 0, duration: .7, stagger: .07, ease: 'power3.out' });
+    }});
+  }));
+
+  /* ---------- reviews loop ---------- */
+  const rt = document.getElementById('revTrack');
+  rt.innerHTML += rt.innerHTML;
+
+  if (!hasGsap) {
+    document.querySelectorAll('.count').forEach(c => c.textContent = (+c.dataset.to).toLocaleString('ru-RU'));
+    return;
+  }
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* ---------- hero entrance ---------- */
+  gsap.timeline({ defaults: { ease: 'power4.out' } })
+    .from('#arch', { clipPath: 'inset(100% 0% 0% 0% round 999px 999px 28px 28px)', duration: 1.5, ease: 'expo.inOut' })
+    .from('#arch video', { scale: 1.4, duration: 2, ease: 'expo.out' }, .3)
+    .from('#heroTitle .ln > span', { yPercent: 115, duration: 1.1, stagger: .1 }, .2)
+    .from('.h-in', { y: 26, opacity: 0, duration: .9, stagger: .08, ease: 'power3.out' }, .6)
+    .from('#badge', { scale: 0, rotate: -120, duration: 1.1, ease: 'back.out(1.6)' }, .9)
+    .from('.float', { scale: 0, duration: .9, stagger: .12, ease: 'back.out(1.8)' }, 1.05)
+    .from('#heroNote', { opacity: 0, x: -20, duration: .8 }, 1.3);
+
+  // floating photos drift with the mouse (desktop) and with scroll
+  if (matchMedia('(hover: hover)').matches) {
+    const floats = gsap.utils.toArray('.float');
+    addEventListener('mousemove', e => {
+      const dx = e.clientX / innerWidth - .5, dy = e.clientY / innerHeight - .5;
+      floats.forEach(f => gsap.to(f, { x: dx * f.dataset.depth * 2, y: dy * f.dataset.depth * 2, duration: 1.2, ease: 'power3.out' }));
+    });
+  }
+  gsap.to('#archWrap', { yPercent: -8, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
+
+  /* ---------- crossing bands: loop + speed up with scroll ---------- */
+  const bandTweens = gsap.utils.toArray('.band-track').map(tr => {
+    const dir = +tr.dataset.dir;
+    return gsap.fromTo(tr, { xPercent: dir < 0 ? 0 : -50 }, { xPercent: dir < 0 ? -50 : 0, duration: 30, ease: 'none', repeat: -1 });
+  });
+  let boost = 0;
+  lenis && lenis.on('scroll', e => { boost = gsap.utils.clamp(-5, 5, e.velocity / 7); });
+  gsap.ticker.add(() => {
+    boost *= .92;
+    bandTweens.forEach(t => t.timeScale((1 + Math.abs(boost)) * (boost < -0.2 ? -1 : 1)));
+  });
+
+  /* ---------- fade-up ---------- */
+  gsap.set('.up', { y: 50, opacity: 0 });
+  ScrollTrigger.batch('.up', {
+    start: 'top 88%', once: true,
+    onEnter: els => gsap.to(els, { y: 0, opacity: 1, duration: 1.05, stagger: .08, ease: 'power3.out', overwrite: true })
+  });
+  gsap.from('#menuGrid .dish', { y: 50, opacity: 0, duration: 1, stagger: .08, ease: 'power3.out', scrollTrigger: { trigger: '#menuGrid', start: 'top 85%', once: true } });
+
+  /* ---------- about: inline photos pop open ---------- */
+  gsap.from('.about-text .pic', { width: 0, duration: 1.2, stagger: .18, ease: 'expo.out', scrollTrigger: { trigger: '.about-text', start: 'top 75%', once: true } });
+
+  /* ---------- counters ---------- */
+  gsap.utils.toArray('.count').forEach(c => {
+    const o = { v: 0 };
+    gsap.to(o, { v: +c.dataset.to, duration: 2, ease: 'power2.out', scrollTrigger: { trigger: c, start: 'top 90%', once: true },
+      onUpdate: () => c.textContent = Math.round(o.v).toLocaleString('ru-RU') });
+  });
+
+  /* ---------- story: sticky photo wipes between steps ---------- */
+  const mm = gsap.matchMedia();
+  mm.add('(min-width: 1025px)', () => {
+    const imgs = gsap.utils.toArray('#storyVisual img');
+    const bars = gsap.utils.toArray('.story-progress b');
+    gsap.utils.toArray('#storySteps .step').forEach((step, i) => {
+      gsap.to(bars[i], { scaleX: 1, ease: 'none', scrollTrigger: { trigger: step, start: 'top center', end: 'bottom center', scrub: true } });
+      gsap.from(step.children, { y: 40, opacity: 0, stagger: .08, duration: .9, ease: 'power3.out', scrollTrigger: { trigger: step, start: 'top 70%', toggleActions: 'play none none reverse' } });
+      if (i === 0) return;
+      gsap.fromTo(imgs[i], { clipPath: 'inset(100% 0 0 0)', scale: 1.15 }, { clipPath: 'inset(0% 0 0 0)', scale: 1, ease: 'none',
+        scrollTrigger: { trigger: step, start: 'top 85%', end: 'top 35%', scrub: true } });
+    });
+  });
+
+  /* ---------- video band parallax ---------- */
+  gsap.fromTo('#vband video', { yPercent: -8 }, { yPercent: 8, ease: 'none', scrollTrigger: { trigger: '#vband', scrub: true } });
+
+  /* ---------- gallery: tilted cards settle ---------- */
+  gsap.utils.toArray('.gi').forEach((g, i) => {
+    gsap.from(g, { y: 80, rotate: i % 2 ? 4 : -4, opacity: 0, duration: 1.2, ease: 'power3.out', scrollTrigger: { trigger: g, start: 'top 92%', once: true } });
+  });
+
+  gsap.from('.foot-big', { yPercent: 60, opacity: 0, ease: 'none', scrollTrigger: { trigger: 'footer', start: 'top bottom', end: 'bottom bottom', scrub: true } });
+  addEventListener('load', () => ScrollTrigger.refresh());
+})();
+</script>
+</body>
+</html>
