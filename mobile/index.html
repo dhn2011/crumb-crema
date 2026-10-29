@@ -46,11 +46,9 @@
   .status{position:absolute;inset:0 0 auto;height:44px;z-index:40;display:flex;align-items:center;justify-content:space-between;padding:0 24px 0 28px;font-weight:700;font-size:15px;pointer-events:none}
   .status .r{display:flex;gap:6px;align-items:center}
   .status svg{height:12px}
-  .embed .status{display:none}
 
   /* screens */
   .screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;padding:52px 18px calc(110px + var(--safe-b));opacity:0;transform:translateY(14px) scale(.985);pointer-events:none;transition:opacity .35s var(--ease),transform .45s var(--ease);scrollbar-width:none}
-  .embed .screen{padding-top:16px}
   .screen::-webkit-scrollbar{display:none}
   .screen.on{opacity:1;transform:none;pointer-events:auto}
   .big{font-family:var(--display);font-weight:500;font-size:28px;letter-spacing:-.03em;line-height:1.1}
@@ -172,10 +170,8 @@
 
   /* order tracking */
   .track{position:absolute;inset:0;z-index:45;background:var(--bg);display:flex;flex-direction:column;align-items:center;padding:70px 24px calc(30px + var(--safe-b));transform:translateY(100%);transition:transform .6s var(--ease),background .4s}
-  .embed .track{padding-top:30px}
   .track.on{transform:none}
   .track .close{position:absolute;top:52px;right:18px;width:40px;height:40px;border-radius:50%;background:var(--surface);font-size:20px}
-  .embed .track .close{top:14px}
   .cupbox{width:180px;height:180px;margin-top:20px}
   #liquid{transition:transform 1.2s var(--ease)}
   .steam path{stroke-dasharray:40;stroke-dashoffset:40;animation:steam 2.4s ease-in-out infinite}
@@ -227,7 +223,6 @@
   @keyframes kb{to{transform:scale(1.12)}}
   .viewer::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.45),transparent 30%,transparent 55%,rgba(0,0,0,.8))}
   .bars{position:absolute;z-index:2;top:52px;left:12px;right:12px;display:flex;gap:4px}
-  .embed .bars{top:14px}
   .bars span{flex:1;height:3px;border-radius:3px;background:rgba(255,255,255,.35);overflow:hidden}
   .bars span i{display:block;height:100%;width:0;background:#fff}
   .v-cap{position:absolute;z-index:2;left:20px;right:20px;bottom:calc(40px + var(--safe-b));color:#fff}
@@ -236,7 +231,6 @@
   .v-cap p{opacity:.85;margin-top:8px}
   .v-cap .btn{margin-top:16px;width:100%;flex:none}
   .v-close{position:absolute;z-index:3;top:62px;right:14px;width:36px;height:36px;color:#fff;font-size:22px}
-  .embed .v-close{top:24px}
   .v-tap{position:absolute;z-index:1;top:0;bottom:0;width:40%}
 
   /* push notification */
