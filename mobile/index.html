@@ -27,6 +27,18 @@
   a{color:inherit;text-decoration:none}
   img{display:block;max-width:100%}
   .hand{font-family:'Caveat',cursive;font-weight:700;color:var(--accent)}
+  .ico{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+  .q span{color:var(--accent)}
+  .ob-ic{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.12);display:grid;place-items:center;color:var(--accent-2);flex:none}
+  .li .ic{color:var(--accent)}
+  .li .ic .ico,.stp .c .ico,.h-ic .ico{width:18px;height:18px}
+  .fab .ico{width:20px;height:20px}
+  .stamp .ico{width:52%;height:52%}
+  .wallet .stamp{color:rgba(255,255,255,.85)}
+  .wallet .stamp.on{color:var(--accent)}
+  .st-grid .stamp{color:var(--muted)}
+  .st-grid .stamp.on{color:#fff}
+  .h-ic{width:36px;height:36px;border-radius:10px;background:var(--surface-2);display:grid;place-items:center;color:var(--accent);flex:none}
   .app{position:relative;height:100%;max-width:440px;margin:0 auto;background:var(--bg);overflow:hidden;transition:background .4s}
   @media (min-width:500px){.app{box-shadow:0 0 60px rgba(0,0,0,.15)}}
 
@@ -248,22 +260,22 @@
   <!-- HOME -->
   <section class="screen on" id="home">
     <div class="hello-row">
-      <div><small id="greet">Доброе утро</small><span class="big" id="hiName">Даня ☀️</span></div>
+      <div><small id="greet">Доброе утро</small><span class="big" id="hiName">Гость</span></div>
       <div style="display:flex"><button class="bell" id="bell" aria-label="Уведомления"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 9a6 6 0 1 1 12 0c0 6 2 7 2 7H4s2-1 2-7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 20a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.8"/></svg><i></i></button><button class="avatar" data-go="profile" id="avatarBtn">Д</button></div>
     </div>
     <div class="stories" id="stories"></div>
     <div class="wallet" id="wallet">
-      <div class="top"><span>CRUMB &amp; CREMA · CLUB</span><span class="lvl">★ Gold</span></div>
+      <div class="top"><span>CRUMB &amp; CREMA · CLUB</span><span class="lvl">Gold</span></div>
       <div class="bal"><span id="balance">1 240</span> <small>бонусов</small></div>
       <div class="stamps" id="homeStamps"></div>
       <p id="stampText"></p>
     </div>
-    <div class="order-banner" id="orderBanner"><span style="font-size:26px">☕</span><div style="flex:1"><b id="obTitle">Заказ готовится</b><small id="obSub">Ориентировочно 4 мин</small><div class="pb"><i id="obBar" style="width:10%"></i></div></div><span>›</span></div>
+    <div class="order-banner" id="orderBanner"><span data-icon="cup" class="ob-ic"></span><div style="flex:1"><b id="obTitle">Заказ готовится</b><small id="obSub">Ориентировочно 4 мин</small><div class="pb"><i id="obBar" style="width:10%"></i></div></div><span>›</span></div>
     <div class="quick">
-      <button class="q" data-go="menu"><span>🥐</span>Заказать</button>
-      <button class="q" id="qCard"><span>📱</span>Карта</button>
-      <a class="q" href="../games/" id="qGames"><span>🎁</span>Игры</a>
-      <button class="q" id="qBook"><span>🪑</span>Столик</button>
+      <button class="q" data-go="menu"><span data-icon="bag"></span>Заказать</button>
+      <button class="q" id="qCard"><span data-icon="qr"></span>Карта</button>
+      <a class="q" href="../games/" id="qGames"><span data-icon="gift"></span>Игры</a>
+      <button class="q" id="qBook"><span data-icon="calendar"></span>Столик</button>
     </div>
     <div class="sec-t"><b>Популярное</b><span data-go="menu">Всё меню</span></div>
     <div class="h-scroll" id="popular"></div>
@@ -286,7 +298,7 @@
     </div>
     <div class="sec-t"><b>Штампы</b><span id="stampLeft"></span></div>
     <div class="st-grid" id="cardStamps"></div>
-    <button class="btn dark" id="simBuy" style="margin-top:14px;width:100%">☕ Симулировать покупку</button>
+    <button class="btn dark" id="simBuy" style="margin-top:14px;width:100%">Симулировать покупку</button>
     <div class="sec-t"><b>История</b><span>Октябрь</span></div>
     <div class="hist" id="hist"></div>
   </section>
@@ -294,16 +306,16 @@
   <!-- PROFILE -->
   <section class="screen" id="profile">
     <div class="prof"><span class="avatar">Д</span><div><b id="profName">Даня</b><br><small style="color:var(--muted)">Гость с марта 2026</small></div></div>
-    <div class="lvl-bar"><div style="display:flex;justify-content:space-between;font-weight:800;font-size:14px"><span>★ Gold</span><span style="color:var(--muted);font-weight:600">до Platinum 8 визитов</span></div><div class="pb"><i></i></div></div>
+    <div class="lvl-bar"><div style="display:flex;justify-content:space-between;font-weight:800;font-size:14px"><span>Уровень Gold</span><span style="color:var(--muted);font-weight:600">до Platinum 8 визитов</span></div><div class="pb"><i></i></div></div>
     <div class="list">
-      <button class="li" id="pushRow"><span class="ic">🔔</span>Push-уведомления<span class="r"><span class="sw on" id="pushSw"></span></span></button>
-      <button class="li" id="darkRow"><span class="ic">🌙</span>Тёмная тема<span class="r"><span class="sw" id="darkSw"></span></span></button>
-      <button class="li" id="langRow"><span class="ic">🌐</span>Язык<span class="r" id="langVal">Русский</span></button>
+      <button class="li" id="pushRow"><span class="ic" data-icon="bell"></span>Push-уведомления<span class="r"><span class="sw on" id="pushSw"></span></span></button>
+      <button class="li" id="darkRow"><span class="ic" data-icon="moon"></span>Тёмная тема<span class="r"><span class="sw" id="darkSw"></span></span></button>
+      <button class="li" id="langRow"><span class="ic" data-icon="globe"></span>Язык<span class="r" id="langVal">Русский</span></button>
     </div>
     <div class="list">
-      <button class="li"><span class="ic">📍</span>Мои адреса<span class="r">2</span></button>
-      <button class="li"><span class="ic">🧾</span>История заказов<span class="r" id="ordersCount">14</span></button>
-      <button class="li"><span class="ic">💬</span>Поддержка<span class="r">Telegram</span></button>
+      <button class="li"><span class="ic" data-icon="pin"></span>Мои адреса<span class="r">2</span></button>
+      <button class="li"><span class="ic" data-icon="receipt"></span>История заказов<span class="r" id="ordersCount">14</span></button>
+      <button class="li"><span class="ic" data-icon="chat"></span>Поддержка<span class="r">Telegram</span></button>
     </div>
     <p class="ver">CRUMB &amp; CREMA · версия 1.0.0 · демо</p>
   </section>
@@ -315,7 +327,7 @@
     <button class="tab" data-go="card"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.9"/><rect x="14" y="4" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.9"/><rect x="4" y="14" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.9"/><path d="M14 14h2v2h-2zM18 18h2v2h-2zM14 18h2M18 14h2" stroke="currentColor" stroke-width="1.9"/></svg>Карта</button>
     <button class="tab" data-go="profile"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.5" r="3.8" stroke="currentColor" stroke-width="1.9"/><path d="M4.5 20c1.2-3.6 4-5.5 7.5-5.5s6.3 1.9 7.5 5.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>Профиль</button>
   </nav>
-  <button class="fab" id="fab">🛒 Корзина <i id="fabCount">0</i></button>
+  <button class="fab" id="fab"><span data-icon="cart"></span>Корзина <i id="fabCount">0</i></button>
 
   <div class="shade" id="shade"></div>
   <div class="sheet" id="sheet"></div>
@@ -335,9 +347,9 @@
     <h2 id="trackTitle">Заказ принят</h2>
     <span class="no" id="trackNo">№ A-17</span>
     <div class="steps">
-      <div class="stp on" id="s1"><span class="c">✓</span><div><b>Принят</b><small>Бариста увидел заказ</small></div></div>
-      <div class="stp" id="s2"><span class="c">☕</span><div><b>Готовится</b><small>Варим и печём</small></div></div>
-      <div class="stp" id="s3"><span class="c">🔔</span><div><b>Готов</b><small>Заберите у бара</small></div></div>
+      <div class="stp on" id="s1"><span class="c" data-icon="check"></span><div><b>Принят</b><small>Бариста увидел заказ</small></div></div>
+      <div class="stp" id="s2"><span class="c" data-icon="cup"></span><div><b>Готовится</b><small>Варим и печём</small></div></div>
+      <div class="stp" id="s3"><span class="c" data-icon="bell"></span><div><b>Готов</b><small>Заберите у бара</small></div></div>
     </div>
   </div>
 
@@ -364,6 +376,26 @@
   // browsers only allow vibration after the first tap
   const buzz = ms => { try { if (navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) navigator.vibrate(ms); } catch (e) {} };
   const IMG = (id, w = 400, h = w) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&h=${h}&q=70`;
+
+  /* ---------- line icons (one consistent set instead of emoji) ---------- */
+  const PATHS = {
+    cup: '<path d="M5 9h12v4a6 6 0 0 1-12 0V9Z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"/>',
+    bag: '<path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8a3 3 0 0 1 6 0"/>',
+    qr: '<rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><path d="M14 14h2v2h-2zM18 18h2v2h-2zM14 18h2M18 14h2"/>',
+    gift: '<rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M3 9h18M12 9v11M12 9c-1.6-3.2-5.5-3.6-5.5-1.3C6.5 9 12 9 12 9Zm0 0c1.6-3.2 5.5-3.6 5.5-1.3C17.5 9 12 9 12 9Z"/>',
+    calendar: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+    bell: '<path d="M6 9a6 6 0 1 1 12 0c0 6 2 7 2 7H4s2-1 2-7Z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+    moon: '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/>',
+    globe: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.6 2.6 14.4 0 17M12 3.5c-2.6 2.6-2.6 14.4 0 17"/>',
+    pin: '<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/>',
+    receipt: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6"/>',
+    chat: '<path d="M4 5h16v11H9l-5 4V5Z"/>',
+    check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+    ticket: '<path d="M4 7h16v3a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 0 0-4V7Z"/><path d="M14 8v8"/>',
+    cart: '<path d="M3 5h2.5l2 10h10l2-7H7"/><circle cx="9" cy="19" r="1.3"/><circle cx="17" cy="19" r="1.3"/>'
+  };
+  const icon = name => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${PATHS[name]}</svg>`;
+  document.querySelectorAll('[data-icon]').forEach(el => { el.innerHTML = icon(el.dataset.icon); });
 
   /* ---------- data ---------- */
   const MENU = {
@@ -408,7 +440,7 @@
   const h = new Date().getHours();
   const night = h < 5;
   $('greet').textContent = night ? 'Доброй ночи' : h < 12 ? 'Доброе утро' : h < 18 ? 'Добрый день' : 'Добрый вечер';
-  $('hiName').textContent = `${name} ${night || h >= 18 ? '🌙' : h < 12 ? '☀️' : '👋'}`;
+  $('hiName').textContent = name;
   $('profName').textContent = name;
   document.querySelectorAll('.avatar').forEach(a => a.textContent = name[0].toUpperCase());
   const tick = () => { const d = new Date(); $('clock').textContent = `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`; };
@@ -438,19 +470,19 @@
     return `<div class="pop-item"><img src="${IMG(it.img, 300)}" alt="" loading="lazy"><b>${it.n}</b><div class="row">${fmt(it.p)} сум<button class="plus" data-add="${id}">+</button></div></div>`;
   }).join('');
   function renderStamps(el, cls) {
-    el.innerHTML = Array.from({ length: 6 }, (_, i) => `<span class="stamp${i < state.stamps ? ' on' : ''}${cls && i === state.stamps - 1 ? ' pop' : ''}">${i < state.stamps ? '☕' : i === 5 ? '🎁' : ''}</span>`).join('');
+    el.innerHTML = Array.from({ length: 6 }, (_, i) => `<span class="stamp${i < state.stamps ? ' on' : ''}${cls && i === state.stamps - 1 ? ' pop' : ''}">${i < state.stamps ? icon('cup') : i === 5 ? icon('gift') : ''}</span>`).join('');
   }
   function renderWallet(popLast) {
     $('balance').textContent = fmt(state.balance);
     renderStamps($('homeStamps'), popLast);
     const left = 6 - state.stamps;
-    $('stampText').textContent = left ? `Ещё ${left} ${left === 1 ? 'кофе' : 'кофе'} — и следующий в подарок` : 'Следующий кофе — в подарок! 🎉';
+    $('stampText').textContent = left ? `Ещё ${left} кофе — и следующий в подарок` : 'Следующий кофе — в подарок';
   }
   renderWallet();
   $('wallet').onclick = () => go('card');
   $('qCard').onclick = () => go('card');
-  $('qBook').onclick = () => toast('🪑 Столик на 2 — сегодня 19:00 забронирован');
-  $('bell').onclick = () => push('Утренний кофе −20%', 'До 10:00 — для ранних пташек ☕');
+  $('qBook').onclick = () => toast('Столик на двоих забронирован на 19:00');
+  $('bell').onclick = () => push('Утренний кофе −20%', 'До 10:00 — для ранних пташек');
 
   /* ---------- stories ---------- */
   let sIdx = 0, sTimer = null;
@@ -497,7 +529,7 @@
   $('chips').addEventListener('click', e => { const c = e.target.closest('.chip'); if (c) { pickCat(c.dataset.c); buzz(6); } });
   document.addEventListener('click', e => {
     const add = e.target.closest('[data-add]');
-    if (add) { e.stopPropagation(); addToCart(add.dataset.add, 'M', 1); toast(`✓ ${BY[add.dataset.add].n} в корзине`); return; }
+    if (add) { e.stopPropagation(); addToCart(add.dataset.add, 'M', 1); toast(`${BY[add.dataset.add].n} в корзине`); return; }
     const open = e.target.closest('[data-open]');
     if (open) openItem(open.dataset.open);
   }, true);
@@ -558,7 +590,7 @@
     });
     $('qm').onclick = () => { if (q > 1) { q--; upd(); } };
     $('qp').onclick = () => { q++; upd(); };
-    $('addBtn').onclick = () => { addToCart(id, size, q); closeSheet(); toast(`✓ ${it.n} в корзине`); };
+    $('addBtn').onclick = () => { addToCart(id, size, q); closeSheet(); toast(`${it.n} в корзине`); };
     upd();
   }
 
@@ -606,7 +638,7 @@
     setTimeout(() => setStep(2), 2500);
     setTimeout(() => {
       setStep(3);
-      push('☕ Ваш заказ готов!', 'Заберите у бара — бариста уже ждёт');
+      push('Ваш заказ готов', 'Заберите у бара — бариста уже ждёт');
       for (let k = 0; k < Math.max(1, drinks); k++) setTimeout(() => addStamp(), 900 + k * 500);
       renderWallet();
     }, 7500);
@@ -634,22 +666,22 @@
     renderStamps($('cardStamps'), pop);
     const left = 6 - state.stamps;
     $('stampLeft').textContent = left ? `ещё ${left} до подарка` : 'подарок ждёт!';
-    $('hist').innerHTML = state.history.slice(0, 6).map(([t, d, v]) => `<div class="line"><span style="font-size:22px">${v.startsWith('−') ? '🎟️' : '☕'}</span><div class="tx"><b>${t}</b><small>${d}</small></div><span class="${v.startsWith('−') ? 'minusv' : 'plusv'}">${v}</span></div>`).join('');
+    $('hist').innerHTML = state.history.slice(0, 6).map(([t, d, v]) => `<div class="line"><span class="h-ic">${icon(v.startsWith('−') ? 'ticket' : 'cup')}</span><div class="tx"><b>${t}</b><small>${d}</small></div><span class="${v.startsWith('−') ? 'minusv' : 'plusv'}">${v}</span></div>`).join('');
   }
   function addStamp() {
     state.stamps++;
     buzz(15);
     if (state.stamps >= 6) {
       renderWallet(true); if (cur === 'card') renderCard(true);
-      setTimeout(() => { confetti(); push('🎁 Кофе в подарок!', 'Вы собрали 6 штампов — следующий капучино за наш счёт'); state.stamps = 0; renderWallet(); if (cur === 'card') renderCard(); }, 900);
+      setTimeout(() => { confetti(); push('Кофе в подарок', 'Вы собрали 6 штампов — следующий капучино за наш счёт'); state.stamps = 0; renderWallet(); if (cur === 'card') renderCard(); }, 900);
       return;
     }
     renderWallet(true); if (cur === 'card') renderCard(true);
   }
-  $('simBuy').onclick = () => { state.balance += 16; state.history.unshift(['Капучино', 'сегодня', '+16']); addStamp(); renderWallet(); renderCard(true); toast('☕ +1 штамп и +16 бонусов'); };
+  $('simBuy').onclick = () => { state.balance += 16; state.history.unshift(['Капучино', 'сегодня', '+16']); addStamp(); renderWallet(); renderCard(true); toast('+1 штамп и +16 бонусов'); };
 
   /* ---------- profile ---------- */
-  $('pushRow').onclick = () => { const on = $('pushSw').classList.toggle('on'); buzz(8); if (on) setTimeout(() => push('Уведомления включены 🔔', 'Будем сообщать о готовности заказа и акциях'), 300); };
+  $('pushRow').onclick = () => { const on = $('pushSw').classList.toggle('on'); buzz(8); if (on) setTimeout(() => push('Уведомления включены', 'Будем сообщать о готовности заказа и акциях'), 300); };
   $('darkRow').onclick = () => {
     const on = $('darkSw').classList.toggle('on');
     document.documentElement.classList.toggle('dark', on);
@@ -679,7 +711,7 @@
     $('app').appendChild(box); setTimeout(() => box.remove(), 4000);
   }
   // a gentle welcome push shortly after opening, so the demo shows notifications right away
-  setTimeout(() => push('Доброе утро! ☕', 'Утренний кофе со скидкой 20% до 10:00'), 2500);
+  setTimeout(() => push('Утренний кофе −20%', 'Каждый день до 10:00 — заходите по пути на работу'), 2500);
 })();
 </script>
 <style>@keyframes spin{to{transform:rotate(360deg)}}</style>

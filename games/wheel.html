@@ -43,7 +43,7 @@
       <div class="hub"><svg viewBox="0 0 32 32" fill="none"><path d="M9 14h12v3a6 6 0 0 1-12 0v-3Z" fill="#fffaf2"/><path d="M21 15h1.5a2 2 0 0 1 0 4H21" stroke="#fffaf2" stroke-width="1.6"/><path d="M12 8.5c0 1.2 1 1.2 1 2.4M16 8c0 1.2 1 1.2 1 2.4" stroke="#e7a36b" stroke-width="1.4" stroke-linecap="round"/></svg></div>
     </div>
     <button class="btn spin-btn" id="spinBtn">Крутить!</button>
-    <div class="prizes"><span>−5…15%</span><span>🥐 круассан</span><span>☕ кофе</span><span>🍥 синнабон</span></div>
+    <div class="prizes"><span>скидки 5–15%</span><span>круассан</span><span>капучино</span><span>синнабон</span></div>
   </div>
   <div class="toast" id="toast"></div>
 
@@ -52,14 +52,14 @@
 (() => {
   GAME.setupBack(true);
   const SEG = [
-    { label: '−10%', emoji: '🏷️', prize: 'Скидка 10% на заказ', w: 22, bg: '#c4512f', fg: '#fff' },
-    { label: 'Круассан', emoji: '🥐', prize: 'Круассан в подарок', w: 12, bg: '#fffaf2', fg: '#2b1d14' },
-    { label: 'Ещё раз', emoji: '🔄', again: true, w: 10, bg: '#e7a36b', fg: '#2b1d14' },
-    { label: '−15%', emoji: '🔥', prize: 'Скидка 15% на заказ', w: 8, bg: '#fffaf2', fg: '#2b1d14' },
-    { label: 'Кофе', emoji: '☕', prize: 'Капучино в подарок', w: 6, bg: '#7f8f5a', fg: '#fff' },
-    { label: 'Увы', emoji: '🙈', lose: true, w: 22, bg: '#fffaf2', fg: '#7d6b5d' },
-    { label: '−5%', emoji: '🏷️', prize: 'Скидка 5% на заказ', w: 16, bg: '#2b1d14', fg: '#fff' },
-    { label: 'Синнабон', emoji: '🍥', prize: 'Синнабон в подарок', w: 4, bg: '#fffaf2', fg: '#2b1d14' }
+    { label: '−10%', icon: 'percent', prize: 'Скидка 10% на заказ', w: 22, bg: '#c4512f', fg: '#fff' },
+    { label: 'Круассан', icon: 'croissant', prize: 'Круассан в подарок', w: 12, bg: '#fffaf2', fg: '#2b1d14' },
+    { label: 'Ещё раз', icon: 'gift', again: true, w: 10, bg: '#e7a36b', fg: '#2b1d14' },
+    { label: '−15%', icon: 'percent', prize: 'Скидка 15% на заказ', w: 8, bg: '#fffaf2', fg: '#2b1d14' },
+    { label: 'Кофе', icon: 'cup', prize: 'Капучино в подарок', w: 6, bg: '#7f8f5a', fg: '#fff' },
+    { label: 'Увы', icon: 'moon', lose: true, w: 22, bg: '#fffaf2', fg: '#7d6b5d' },
+    { label: '−5%', icon: 'percent', prize: 'Скидка 5% на заказ', w: 16, bg: '#2b1d14', fg: '#fff' },
+    { label: 'Синнабон', icon: 'swirl', prize: 'Синнабон в подарок', w: 4, bg: '#fffaf2', fg: '#2b1d14' }
   ];
   const N = SEG.length, STEP = 360 / N, R = 150;
   const svg = document.getElementById('wheel');
@@ -71,8 +71,8 @@
     const c = i * STEP, [x0, y0] = pt(c - STEP / 2, R), [x1, y1] = pt(c + STEP / 2, R);
     html += `<path d="M0 0L${x0} ${y0}A${R} ${R} 0 0 1 ${x1} ${y1}Z" fill="${s.bg}" stroke="#2b1d14" stroke-width="1.5"/>`;
     // labels run along the radius (centre -> rim) so long words fit inside narrow segments
-    html += `<g transform="rotate(${c})"><text y="${-R * .9}" text-anchor="middle" dominant-baseline="middle" font-size="20">${s.emoji}</text>` +
-            `<text transform="translate(0 ${-R * .59}) rotate(-90)" text-anchor="middle" dominant-baseline="middle" font-family="Unbounded, sans-serif" font-weight="600" font-size="${s.label.length > 6 ? 12 : 15}" fill="${s.fg}">${s.label}</text></g>`;
+    html += `<g transform="rotate(${c})">` +
+            `<text transform="translate(0 ${-R * .58}) rotate(-90)" text-anchor="middle" dominant-baseline="middle" font-family="Unbounded, sans-serif" font-weight="600" font-size="${s.label.length > 6 ? 14 : 18}" fill="${s.fg}">${s.label}</text></g>`;
   });
   html += '</g>';
   for (let k = 0; k < 24; k++) {
@@ -86,7 +86,7 @@
   const toast = msg => { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('on'); setTimeout(() => t.classList.remove('on'), 1600); };
 
   let angle = 0, spinning = false;
-  if (GAME.playedToday('wheel')) { btn.disabled = true; btn.textContent = 'Приходите завтра ☕'; }
+  if (GAME.playedToday('wheel')) { btn.disabled = true; btn.textContent = 'Приходите завтра'; }
 
   function spin() {
     if (spinning) return;
@@ -120,11 +120,11 @@
   function done(s) {
     spinning = false;
     document.body.classList.remove('spinning');
-    if (s.again) { toast('🔄 Ещё одна попытка!'); GAME.haptic('n', 'success'); btn.disabled = false; btn.textContent = 'Крутить ещё!'; return; }
+    if (s.again) { toast('Ещё одна попытка!'); GAME.haptic('n', 'success'); btn.disabled = false; btn.textContent = 'Крутить ещё!'; return; }
     const again = () => { btn.disabled = false; btn.textContent = 'Крутить!'; };
-    if (s.lose) GAME.showResult({ game: 'wheel', win: false, emoji: '🙈', title: 'Почти получилось!', text: 'Колесо остановилось на «Увы». Загляните завтра — будет новая попытка.', onAgain: GAME.tg ? null : again });
-    else GAME.showResult({ game: 'wheel', win: true, prize: s.prize, emoji: s.emoji, text: s.prize, onAgain: again });
-    if (GAME.tg) { btn.textContent = 'Приходите завтра ☕'; }
+    if (s.lose) GAME.showResult({ game: 'wheel', win: false, icon: 'moon', title: 'Почти получилось', text: 'Колесо остановилось на «Увы». Загляните завтра — будет новая попытка.', onAgain: GAME.tg ? null : again });
+    else GAME.showResult({ game: 'wheel', win: true, prize: s.prize, icon: s.icon, text: s.prize, onAgain: again });
+    if (GAME.tg) { btn.textContent = 'Приходите завтра'; }
   }
   btn.addEventListener('click', spin);
 })();

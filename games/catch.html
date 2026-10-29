@@ -17,7 +17,7 @@
   .score small{font-family:'Manrope',sans-serif;font-size:12px;color:var(--muted);font-weight:600;display:block;line-height:1}
   .timer{flex:1;height:10px;border-radius:10px;background:var(--surface-2);overflow:hidden}
   .timer i{display:block;height:100%;width:100%;background:var(--accent);border-radius:10px;transform-origin:left}
-  .lives{font-size:20px;letter-spacing:2px;min-width:78px;text-align:right}
+  .lives{display:flex;gap:4px;justify-content:flex-end;min-width:78px}.lives svg{width:22px;height:22px}
   .field{position:relative;flex:1;margin:0 12px calc(12px + var(--safe-b));border-radius:24px;overflow:hidden;background:linear-gradient(180deg,#fffaf2 0%,#f3e7d5 100%);box-shadow:inset 0 0 0 2px rgba(43,29,20,.06)}
   canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
   .overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;background:rgba(246,240,230,.92);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);transition:opacity .4s;z-index:2}
@@ -26,7 +26,7 @@
   .overlay h2 span{color:var(--accent)}
   .rules{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:20px 0 22px;width:min(100%,320px)}
   .rules div{background:var(--surface);border-radius:14px;padding:10px;font-size:13px;font-weight:600}
-  .rules div span{font-size:26px;display:block}
+  .rules .ri{display:flex;justify-content:center;gap:4px;height:34px;align-items:center;margin-bottom:4px}.rules .x5{font-family:var(--display);font-weight:600;font-size:20px;color:var(--accent)}
   .tiers{font-size:12px;color:var(--muted);margin-top:14px;line-height:1.7}
   .count{font-family:var(--display);font-weight:600;font-size:96px;color:var(--accent);animation:cnt .9s var(--ease)}
   @keyframes cnt{0%{transform:scale(2);opacity:0}40%{transform:scale(1);opacity:1}100%{opacity:.2}}
@@ -41,7 +41,7 @@
   <div class="hud">
     <div class="score" id="score">0<small>очков</small></div>
     <div class="timer"><i id="timer"></i></div>
-    <div class="lives" id="lives">❤️❤️❤️</div>
+    <div class="lives" id="lives"></div>
   </div>
   <div class="field" id="field">
     <canvas id="cv"></canvas>
@@ -50,10 +50,10 @@
       <span class="hand" style="font-size:24px">аркада на 45 секунд</span>
       <h2>Лови <span>круассаны</span></h2>
       <div class="rules">
-        <div><span>🥐 ☕</span>+1 очко</div>
-        <div><span>🍥</span>+3 очка</div>
-        <div><span>🐝</span>−1 жизнь</div>
-        <div><span>🔥</span>5 подряд = бонус</div>
+        <div><span class="ri" data-art="croissant cup"></span>+1 очко</div>
+        <div><span class="ri" data-art="swirl"></span>+3 очка</div>
+        <div><span class="ri" data-art="bee"></span>−1 жизнь</div>
+        <div><span class="ri"><b class="x5">×5</b></span>подряд = бонус</div>
       </div>
       <button class="btn" id="playBtn" style="min-width:220px">Играть</button>
       <p class="tiers">18+ очков — скидка 10% · 30+ — круассан · 45+ — кофе в подарок</p>
@@ -71,11 +71,15 @@
   const $score = document.getElementById('score'), $timer = document.getElementById('timer'), $lives = document.getElementById('lives');
   const GAME_TIME = 45;
   const TYPES = [
-    { e: '🥐', pts: 1, w: 50 },
-    { e: '☕', pts: 1, w: 30 },
-    { e: '🍥', pts: 3, w: 8, gold: true },
-    { e: '🐝', bad: true, w: 14 }
+    { kind: 'croissant', pts: 1, w: 50 },
+    { kind: 'cup', pts: 1, w: 30 },
+    { kind: 'swirl', pts: 3, w: 8, gold: true },
+    { kind: 'bee', bad: true, w: 14 }
   ];
+  const SPRITE = Object.fromEntries(['croissant', 'cup', 'swirl', 'bee', 'basket'].map(k => [k, GAME.artImage(k)]));
+  document.querySelectorAll('.ri[data-art]').forEach(el => { el.innerHTML = el.dataset.art.split(' ').map(a => GAME.art(a, 32)).join(''); });
+  const HEART = on => `<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" fill="${on ? '#c4512f' : 'none'}" stroke="${on ? '#c4512f' : '#c9b9a8'}" stroke-width="1.8" stroke-linejoin="round"/></svg>`;
+  const renderLives = () => { $lives.innerHTML = [0, 1, 2].map(i => HEART(i < Math.max(0, lives))).join(''); };
   const storeGet = k => { try { return +localStorage.getItem(k) || 0; } catch (e) { return 0; } };
   const storeSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
   let best = storeGet('cc-catch-best');
@@ -103,7 +107,7 @@
   function reset() {
     items = []; parts = []; texts = []; score = 0; lives = 3; elapsed = 0; spawnIn = .6; streak = 0; shake = 0;
     px = tx = W / 2;
-    $score.innerHTML = '0<small>очков</small>'; $lives.textContent = '❤️❤️❤️'; $timer.style.transform = 'scaleX(1)';
+    $score.innerHTML = '0<small>очков</small>'; renderLives(); $timer.style.transform = 'scaleX(1)';
   }
 
   function spawn() {
@@ -121,7 +125,7 @@
   function catchItem(it) {
     if (it.bad) {
       lives--; streak = 0; shake = 14;
-      $lives.textContent = '❤️'.repeat(Math.max(0, lives)) + '🤍'.repeat(3 - Math.max(0, lives));
+      renderLives();
       const f = document.getElementById('flash'); f.classList.add('on'); setTimeout(() => f.classList.remove('on'), 60);
       texts.push({ x: it.x, y: it.y, t: 'ой!', c: '#d9363e', life: .9 });
       GAME.haptic('n', 'error');
@@ -130,7 +134,7 @@
     }
     streak++;
     let gain = it.pts;
-    if (streak % 5 === 0) { gain += 2; texts.push({ x: W / 2, y: H * .35, t: `🔥 Комбо ×${streak / 5}! +2`, c: '#c4512f', life: 1.1, big: true }); GAME.haptic('n', 'success'); }
+    if (streak % 5 === 0) { gain += 2; texts.push({ x: W / 2, y: H * .35, t: `Комбо ×${streak / 5}  +2`, c: '#c4512f', life: 1.1, big: true }); GAME.haptic('n', 'success'); }
     else GAME.haptic('i', 'light');
     score += gain;
     $score.innerHTML = `${score}<small>очков</small>`;
@@ -179,8 +183,7 @@
     items.forEach(it => {
       ctx.save(); ctx.translate(it.x, it.y); ctx.rotate(it.rot);
       if (it.gold) { ctx.shadowColor = 'rgba(231,163,107,.9)'; ctx.shadowBlur = 18; }
-      ctx.font = '38px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
-      ctx.fillText(it.e, 0, 0);
+      ctx.drawImage(SPRITE[it.kind], -22, -22, 44, 44);
       ctx.restore();
     });
     parts.forEach(p => { ctx.globalAlpha = Math.max(0, p.life / .7); ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill(); });
@@ -188,9 +191,7 @@
     // basket with a soft shadow
     const by = BASKET_Y();
     ctx.fillStyle = 'rgba(43,29,20,.15)'; ctx.beginPath(); ctx.ellipse(px, H - 16, 40, 7, 0, 0, 7); ctx.fill();
-    ctx.font = '62px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
-    ctx.fillStyle = '#000';
-    ctx.fillText('🧺', px, by);
+    ctx.drawImage(SPRITE.basket, px - 38, by - 34, 76, 76);
     texts.forEach(s => {
       ctx.globalAlpha = Math.min(1, s.life * 1.6);
       ctx.fillStyle = s.c; ctx.font = `${s.big ? 700 : 800} ${s.big ? 22 : 20}px Manrope, sans-serif`;
@@ -225,15 +226,15 @@
     if (!running) return;
     running = false;
     if (score > best) { best = score; storeSet('cc-catch-best', best); showBest(); }
-    const tier = score >= 45 ? { p: 'Капучино в подарок', e: '☕' } : score >= 30 ? { p: 'Круассан в подарок', e: '🥐' } : score >= 18 ? { p: 'Скидка 10% на заказ', e: '🏷️' } : null;
+    const tier = score >= 45 ? { p: 'Капучино в подарок', icon: 'cup' } : score >= 30 ? { p: 'Круассан в подарок', icon: 'croissant' } : score >= 18 ? { p: 'Скидка 10% на заказ', icon: 'percent' } : null;
     const again = () => { overlay.innerHTML = rulesHTML; overlay.classList.remove('off'); document.getElementById('playBtn').onclick = start; showBest(); };
     setTimeout(() => {
-      if (tier) GAME.showResult({ game: 'catch', win: true, prize: tier.p, emoji: tier.e, title: `${score} очков!`, text: `Отличная реакция! Ваш приз: ${tier.p}`, onAgain: again });
-      else GAME.showResult({ game: 'catch', win: false, emoji: '🐝', title: `${score} очков`, text: 'Для подарка нужно 18+. Ещё чуть-чуть!', onAgain: GAME.tg ? null : again });
+      if (tier) GAME.showResult({ game: 'catch', win: true, prize: tier.p, icon: tier.icon, title: `${score} очков!`, text: `Отличная реакция! Ваш приз: ${tier.p}`, onAgain: again });
+      else GAME.showResult({ game: 'catch', win: false, icon: 'bee', title: `${score} очков`, text: 'Для подарка нужно 18+. Ещё чуть-чуть!', onAgain: GAME.tg ? null : again });
     }, 400);
   }
   playBtn.onclick = start;
-  if (GAME.playedToday('catch')) { playBtn.disabled = true; playBtn.textContent = 'Приходите завтра ☕'; }
+  if (GAME.playedToday('catch')) { playBtn.disabled = true; playBtn.textContent = 'Приходите завтра'; }
   document.addEventListener('visibilitychange', () => { if (document.hidden) lastT = performance.now(); });
   reset();
   lastT = performance.now();

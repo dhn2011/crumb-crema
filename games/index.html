@@ -15,7 +15,7 @@
   .hero .hand{color:#f8d0b4;font-size:22px}
   .hero h1{font-family:var(--display);font-weight:500;font-size:25px;line-height:1.1;letter-spacing:-.03em;margin-top:4px;max-width:78%}
   .hero p{opacity:.85;font-size:14px;margin-top:8px;max-width:72%}
-  .hero .gift{position:absolute;right:-6px;bottom:-10px;font-size:92px;transform:rotate(12deg);animation:wiggle 3s ease-in-out infinite}
+  .hero .gift{position:absolute;right:-18px;bottom:-22px;width:124px;height:124px;border-radius:50%;background:#f6dfd4;display:grid;place-items:center;line-height:0;transform:rotate(12deg);animation:wiggle 3s ease-in-out infinite}
   @keyframes wiggle{0%,100%{transform:rotate(12deg)}50%{transform:rotate(2deg) translateY(-6px)}}
   .list{display:grid;gap:12px;padding:18px 16px 0}
   .card{display:flex;gap:14px;align-items:center;background:var(--surface);border-radius:22px;padding:12px;position:relative;opacity:0;transform:translateY(16px);animation:rise .6s var(--ease) forwards;transition:transform .25s var(--ease)}
@@ -38,11 +38,11 @@
   .a-scratch .s{width:76px;height:54px;border-radius:10px;background:linear-gradient(110deg,#b9aa99 0%,#e9dfd2 40%,#b9aa99 60%,#d5c9bb 100%);background-size:220% 100%;animation:shine 2.4s linear infinite;display:grid;place-items:center;font-size:11px;font-weight:700;color:#5b4c3f}
   @keyframes shine{to{background-position:-220% 0}}
   .a-catch{background:#efe5d6}
-  .a-catch span{position:absolute;font-size:24px;animation:drop 2.2s linear infinite}
+  .a-catch span{position:absolute;line-height:0;animation:drop 2.2s linear infinite}
   .a-catch span:nth-child(1){left:16px;animation-delay:0s}
   .a-catch span:nth-child(2){left:44px;animation-delay:.7s}
   .a-catch span:nth-child(3){left:68px;animation-delay:1.4s}
-  .a-catch .basket{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);font-size:30px;animation:slide 2.2s ease-in-out infinite}
+  .a-catch .basket{position:absolute;top:auto;bottom:2px;left:50%;transform:translateX(-50%);animation:slide 2.2s ease-in-out infinite}
   @keyframes drop{from{top:-30px}to{top:100px}}
   @keyframes slide{50%{transform:translateX(-80%)}}
   .rules{margin:20px 16px 0;background:var(--surface-2);border-radius:18px;padding:14px 16px;font-size:13px;color:var(--muted)}
@@ -58,12 +58,12 @@
     <span class="hand">играй и выигрывай</span>
     <h1>Подарки от кофейни каждый день</h1>
     <p>Скидки, кофе и выпечка — забирайте на кассе по промокоду</p>
-    <span class="gift">🎁</span>
+    <span class="gift" data-art="gift"></span>
   </div>
   <div class="list">
     <a class="card" href="wheel.html" data-game="wheel"><span class="art a-wheel"><span class="w"></span></span><span><b>Колесо удачи</b><small>Крути и выигрывай скидку или десерт</small></span><span class="go">→</span></a>
     <a class="card" href="scratch.html" data-game="scratch"><span class="art a-scratch"><span class="s">СОТРИ</span></span><span><b>Скретч-карта</b><small>Сотри слой пальцем — под ним приз</small></span><span class="go">→</span></a>
-    <a class="card" href="catch.html" data-game="catch"><span class="art a-catch"><span>🥐</span><span>☕</span><span>🥐</span><span class="basket">🧺</span></span><span><b>Лови круассаны</b><small>Аркада на 45 секунд — рекорд = подарок</small></span><span class="go">→</span></a>
+    <a class="card" href="catch.html" data-game="catch"><span class="art a-catch"><span data-art="croissant"></span><span data-art="cup"></span><span data-art="croissant"></span><span class="basket" data-art="basket"></span></span><span><b>Лови круассаны</b><small>Аркада на 45 секунд — рекорд = подарок</small></span><span class="go">→</span></a>
   </div>
   <div class="rules"><b>Правила:</b> один подарок в день на гостя. Промокод действует 7 дней, покажите его бариста при заказе.</div>
 
@@ -71,9 +71,10 @@
 <script>
   const name = (GAME.tg && GAME.tg.initDataUnsafe && GAME.tg.initDataUnsafe.user && GAME.tg.initDataUnsafe.user.first_name) || (GAME.params.get('name') || '').split(' ')[0];
   if (name) document.getElementById('hello').textContent = `Привет, ${name}!`;
+  document.querySelectorAll('[data-art]').forEach(el => { el.innerHTML = GAME.art(el.dataset.art, el.classList.contains('gift') ? 76 : el.classList.contains('basket') ? 34 : 26); });
   document.querySelectorAll('.card').forEach(c => {
     c.href = GAME.link(c.getAttribute('href'));
-    if (GAME.playedToday(c.dataset.game)) c.insertAdjacentHTML('beforeend', '<span class="done">✓ сегодня</span>');
+    if (GAME.playedToday(c.dataset.game)) c.insertAdjacentHTML('beforeend', '<span class="done">сыграно сегодня</span>');
   });
 </script>
 </body>

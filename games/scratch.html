@@ -22,14 +22,14 @@
   .t-head b i{font-style:normal;color:var(--accent-2)}
   .area{position:relative;aspect-ratio:4/3;border-radius:18px;overflow:hidden;background:var(--surface)}
   .prize{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--ink);text-align:center;padding:16px}
-  .prize .e{font-size:72px;line-height:1}
+  .prize .e{line-height:0}
   .prize b{font-family:var(--display);font-weight:500;font-size:22px;letter-spacing:-.02em}
   .prize small{color:var(--muted)}
   .prize.pop .e{animation:pop .7s var(--ease)}
   @keyframes pop{0%{transform:scale(.3) rotate(-25deg)}60%{transform:scale(1.2) rotate(8deg)}100%{transform:none}}
   #coat{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab;transition:opacity .7s var(--ease)}
   #coat.gone{opacity:0;pointer-events:none}
-  .finger{position:absolute;left:28%;top:56%;font-size:40px;pointer-events:none;animation:swipe 1.6s ease-in-out infinite;filter:drop-shadow(0 4px 6px rgba(0,0,0,.3))}
+  .finger{position:absolute;left:30%;top:58%;width:34px;height:34px;border-radius:50%;background:rgba(255,250,242,.85);border:3px solid #2b1d14;box-shadow:0 0 0 8px rgba(255,250,242,.35);pointer-events:none;animation:swipe 1.6s ease-in-out infinite}
   @keyframes swipe{0%,100%{transform:translate(0,0) rotate(-10deg)}50%{transform:translate(120px,-20px) rotate(10deg)}}
   .t-foot{display:flex;justify-content:space-between;align-items:center;padding:16px 4px 2px;font-size:12px;opacity:.75;border-top:2px dashed rgba(246,240,230,.25);margin-top:18px}
   .bar{width:min(90vw,380px);height:8px;border-radius:8px;background:var(--surface-2);overflow:hidden}
@@ -49,7 +49,7 @@
       <div class="area" id="area">
         <div class="prize" id="prize"><span class="e" id="pE"></span><b id="pT"></b><small id="pS"></small></div>
         <canvas id="coat"></canvas>
-        <span class="finger" id="finger">👆</span>
+        <span class="finger" id="finger"></span>
       </div>
       <div class="t-foot"><span id="ticketNo"></span><span>Действует 7 дней</span></div>
     </div>
@@ -62,13 +62,13 @@
 (() => {
   GAME.setupBack(true);
   const PRIZES = [
-    { e: '🏷️', t: 'Скидка 10%', p: 'Скидка 10% на заказ', w: 30 },
-    { e: '🥐', t: 'Круассан', p: 'Круассан в подарок', w: 15 },
-    { e: '☕', t: 'Капучино', p: 'Капучино в подарок', w: 8 },
-    { e: '🔥', t: 'Скидка 20%', p: 'Скидка 20% на заказ', w: 5 },
-    { e: '🍥', t: 'Синнабон', p: 'Синнабон в подарок', w: 7 },
-    { e: '🏷️', t: 'Скидка 5%', p: 'Скидка 5% на заказ', w: 10 },
-    { e: '🌙', t: 'Повезёт завтра', lose: true, w: 25 }
+    { e: 'percent', t: 'Скидка 10%', p: 'Скидка 10% на заказ', w: 30 },
+    { e: 'croissant', t: 'Круассан', p: 'Круассан в подарок', w: 15 },
+    { e: 'cup', t: 'Капучино', p: 'Капучино в подарок', w: 8 },
+    { e: 'percent', t: 'Скидка 20%', p: 'Скидка 20% на заказ', w: 5 },
+    { e: 'swirl', t: 'Синнабон', p: 'Синнабон в подарок', w: 7 },
+    { e: 'percent', t: 'Скидка 5%', p: 'Скидка 5% на заказ', w: 10 },
+    { e: 'moon', t: 'Повезёт завтра', lose: true, w: 25 }
   ];
   const area = document.getElementById('area'), canvas = document.getElementById('coat'), ctx = canvas.getContext('2d');
   const bar = document.getElementById('bar'), finger = document.getElementById('finger');
@@ -87,7 +87,7 @@
     ctx.save();
     ctx.translate(r.width / 2, r.height / 2); ctx.rotate(-.35);
     ctx.font = '700 15px Manrope, sans-serif'; ctx.fillStyle = 'rgba(91,76,63,.35)'; ctx.textAlign = 'center';
-    for (let y = -r.height; y < r.height; y += 34) for (let x = -r.width; x < r.width; x += 120) ctx.fillText('✦ СОТРИ ✦', x + (y / 34 % 2 ? 60 : 0), y);
+    for (let y = -r.height; y < r.height; y += 34) for (let x = -r.width; x < r.width; x += 120) ctx.fillText('СОТРИ', x + (y / 34 % 2 ? 60 : 0), y);
     ctx.restore();
     ctx.font = '600 22px Unbounded, sans-serif'; ctx.fillStyle = '#5b4c3f'; ctx.textAlign = 'center';
     ctx.fillText('Сотри меня', r.width / 2, r.height / 2 + 8);
@@ -96,7 +96,7 @@
   function newTicket() {
     prize = GAME.pick(PRIZES);
     revealed = false; scratching = false; moves = 0; lastBuzz = 0;
-    document.getElementById('pE').textContent = prize.e;
+    document.getElementById('pE').innerHTML = GAME.art(prize.e, 84);
     document.getElementById('pT').textContent = prize.t;
     document.getElementById('pS').textContent = prize.lose ? 'Сегодня без подарка' : 'Ваш подарок!';
     document.getElementById('prize').classList.remove('pop');
@@ -134,8 +134,8 @@
     bar.style.width = '100%';
     const again = () => newTicket();
     setTimeout(() => {
-      if (prize.lose) GAME.showResult({ game: 'scratch', win: false, emoji: '🌙', title: 'Повезёт завтра', text: 'На этой карте пусто. Новая карта будет ждать вас завтра.', onAgain: GAME.tg ? null : again });
-      else GAME.showResult({ game: 'scratch', win: true, prize: prize.p, emoji: prize.e, text: prize.p, onAgain: again });
+      if (prize.lose) GAME.showResult({ game: 'scratch', win: false, icon: 'moon', title: 'Повезёт завтра', text: 'На этой карте пусто. Новая карта будет ждать вас завтра.', onAgain: GAME.tg ? null : again });
+      else GAME.showResult({ game: 'scratch', win: true, prize: prize.p, icon: prize.e, text: prize.p, onAgain: again });
     }, 900);
   }
 
@@ -146,7 +146,7 @@
 
   newTicket();
   document.fonts && document.fonts.ready.then(() => { if (!moves) paintCoat(); });
-  if (GAME.playedToday('scratch')) area.insertAdjacentHTML('beforeend', '<div class="locked">Сегодняшняя карта уже открыта ✓<br>Новая будет завтра ☕</div>');
+  if (GAME.playedToday('scratch')) area.insertAdjacentHTML('beforeend', '<div class="locked">Сегодняшняя карта уже открыта.<br>Новая будет завтра.</div>');
 })();
 </script>
 </body>
