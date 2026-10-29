@@ -154,6 +154,19 @@
   .geo small a{color:var(--accent);font-weight:700;text-decoration:none}
   .pickup{background:var(--surface);border-radius:16px;padding:14px 16px;margin-top:10px;font-size:14px;display:flex;gap:10px;align-items:flex-start}
   .collapse{overflow:hidden;transition:height .45s var(--ease),opacity .3s}
+  .seg button{font-size:14px}
+  .when-note{font-size:13px;color:var(--muted);margin:10px 4px 0;display:flex;gap:8px;align-items:center}
+  .when-note b{color:var(--ink)}
+  .wdays{display:flex;gap:8px;padding-top:12px}
+  .wday{flex:1;height:58px;border-radius:14px;background:var(--surface);border:1.5px solid transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:14px;transition:background .25s,color .25s,border-color .25s}
+  .wday small{font-weight:500;font-size:12px;color:var(--muted)}
+  .wday.on{background:var(--ink);color:var(--bg)}
+  .wday.on small{color:rgba(246,240,230,.7)}
+  .wslots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px;max-height:212px;overflow-y:auto;padding:2px}
+  .wslot{height:44px;border-radius:12px;background:var(--surface);border:1.5px solid transparent;font-weight:700;font-size:14px;transition:background .25s,color .25s,transform .2s var(--ease)}
+  .wslot:active{transform:scale(.94)}
+  .wslot.on{background:var(--accent);color:#fff}
+  #timeBox.err .wslots{animation:shake .4s}
   .pays{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
   .pay{background:var(--surface);border:1.5px solid transparent;border-radius:14px;padding:10px 6px;font-size:13px;font-weight:600;text-align:center;transition:border-color .25s,background .25s}
   .pay span{display:block;font-size:20px;margin-bottom:2px}
@@ -225,7 +238,12 @@
     </div>
 
     <div class="label">Когда</div>
-    <div class="field sel"><select id="when"></select></div>
+    <div class="seg" id="whenSeg"><i></i><button class="on" data-w="asap">⚡ Как можно скорее</button><button data-w="time">🕒 Ко времени</button></div>
+    <p class="when-note" id="asapNote"></p>
+    <div class="collapse" id="timeBox" style="height:0;opacity:0">
+      <div class="wdays" id="wDays"></div>
+      <div class="wslots" id="wSlots"></div>
+    </div>
 
     <div class="label">Оплата</div>
     <div class="pays" id="pays">
@@ -544,17 +562,67 @@
     haptic('s');
   });
 
-  // time options: ASAP (when open) + 30-minute slots today
-  (() => {
-    const sel = $('when');
-    const opts = isOpen ? ['Как можно скорее'] : [];
+  /* ---------- when: as soon as possible, or a chosen day and time ---------- */
+  let whenMode = 'asap', wDay = null, wTime = null;
+  const LAST_SLOT = CLOSE * 60 - 30; // last order slot 22:30
+  const WD = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
+  const MON = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+  const hhmm = m => `${String(m / 60 | 0).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+  function slotsFor(offset) {
     const now = new Date();
-    let m = Math.max(now.getHours() * 60 + now.getMinutes() + 45, OPEN * 60);
-    m = Math.ceil(m / 30) * 30;
-    for (; m <= (CLOSE * 60 - 30); m += 30) opts.push(`Сегодня к ${String(m / 60 | 0).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`);
-    if (opts.length < 3) ['08:30', '09:00', '09:30', '10:00'].forEach(t => opts.push(`Завтра к ${t}`));
-    sel.innerHTML = opts.map(o => `<option>${o}</option>`).join('');
-  })();
+    // today: give the kitchen at least 45 minutes; other days: from opening time
+    let m = offset === 0 ? Math.max(now.getHours() * 60 + now.getMinutes() + 45, OPEN * 60 + 30) : OPEN * 60 + 30;
+    const out = [];
+    for (m = Math.ceil(m / 30) * 30; m <= LAST_SLOT; m += 30) out.push(hhmm(m));
+    return out;
+  }
+  const DAYS = [0, 1, 2].filter(o => slotsFor(o).length).map(o => {
+    const d = new Date(); d.setDate(d.getDate() + o);
+    return { o, title: o === 0 ? 'Сегодня' : o === 1 ? 'Завтра' : WD[d.getDay()][0].toUpperCase() + WD[d.getDay()].slice(1), sub: `${d.getDate()} ${MON[d.getMonth()]}` };
+  });
+  function renderAsapNote() {
+    $('asapNote').innerHTML = whenMode !== 'asap' ? '' : isOpen
+      ? (mode === 'delivery' ? '🛵 Привезём за <b>30–40 минут</b>' : '☕ Приготовим за <b>10–15 минут</b>')
+      : '🌙 Сейчас мы закрыты — приготовим <b>к открытию в 8:00</b>';
+  }
+  function renderSlots() {
+    $('wDays').innerHTML = DAYS.map(d => `<button class="wday${d.o === wDay ? ' on' : ''}" data-o="${d.o}">${d.title}<small>${d.sub}</small></button>`).join('');
+    $('wSlots').innerHTML = slotsFor(wDay).map(t => `<button class="wslot${t === wTime ? ' on' : ''}" data-t="${t}">${t}</button>`).join('');
+  }
+  $('whenSeg').addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b || b.dataset.w === whenMode) return;
+    whenMode = b.dataset.w;
+    haptic('s');
+    $('whenSeg').classList.toggle('right', whenMode === 'time');
+    $('whenSeg').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+    if (whenMode === 'time' && wDay === null) { wDay = DAYS[0].o; renderSlots(); }
+    renderAsapNote();
+    collapse($('timeBox'), whenMode === 'time');
+  });
+  $('wDays').addEventListener('click', e => {
+    const b = e.target.closest('.wday');
+    if (!b) return;
+    wDay = +b.dataset.o;
+    if (!slotsFor(wDay).includes(wTime)) wTime = null;
+    haptic('s');
+    renderSlots();
+  });
+  $('wSlots').addEventListener('click', e => {
+    const b = e.target.closest('.wslot');
+    if (!b) return;
+    wTime = b.dataset.t;
+    $('timeBox').classList.remove('err');
+    haptic('s');
+    $('wSlots').querySelectorAll('.wslot').forEach(x => x.classList.toggle('on', x === b));
+  });
+  $('modeSeg').addEventListener('click', renderAsapNote);
+  function whenValue() {
+    if (whenMode === 'asap') return isOpen ? 'Как можно скорее' : 'Как можно скорее (к открытию в 8:00)';
+    const d = DAYS.find(x => x.o === wDay);
+    return `${d.title}, ${d.sub} к ${wTime}`;
+  }
+  renderAsapNote();
 
   // contacts: name and phone from Telegram
   const nameInput = $('name'), tgNameBtn = $('tgName'), phone = $('phone');
@@ -644,6 +712,7 @@
     if (mode === 'delivery' && address.length < 5 && !geo) { $('fAddr').classList.add('err'); geoBtn.animate([{ transform: 'translateX(-5px)' }, { transform: 'translateX(5px)' }, { transform: 'none' }], 300); bad = true; }
     if (name.length < 2) { $('fName').classList.add('err'); bad = true; }
     if (digits.length !== 12) { $('fPhone').classList.add('err'); bad = true; }
+    if (whenMode === 'time' && !wTime) { $('timeBox').classList.add('err'); bad = true; }
     if (bad) { haptic('n', 'error'); return; }
 
     // compact payload: Telegram limits sendData to 4096 bytes
@@ -651,9 +720,10 @@
       items: [...cart.values()].map(l => ({ n: ITEMS[l.id].n, o: l.opts.join(' · '), q: l.qty, p: unit(l) })),
       mode, address: mode === 'delivery' ? [address || 'По геолокации', $('addrNote').value.trim()].filter(Boolean).join(', ') : '',
       ...(mode === 'delivery' && geo ? geo : {}),
-      when: $('when').value, payment, name, phone: phone.value, comment: $('comment').value.trim()
+      when: whenValue(), payment, name, phone: phone.value, comment: $('comment').value.trim()
     };
     renderTotals('doneTotals');
+    $('doneTotals').insertAdjacentHTML('afterbegin', `<div><span>${mode === 'delivery' ? 'Доставка' : 'Самовывоз'}</span><span>${payload.when}</span></div>`);
     haptic('n', 'success');
     go('s-done');
     confetti();
