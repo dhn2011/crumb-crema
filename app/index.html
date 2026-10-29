@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>CRUMB & CREMA — заказ</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;600;700&family=Caveat:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f0e6;
+    --surface:#fffaf2;
+    --surface-2:#efe5d6;
+    --ink:#2b1d14;
+    --muted:#7d6b5d;
+    --line:rgba(43,29,20,.1);
+    --accent:#c4512f;
+    --accent-soft:#f6dfd4;
+    --sage:#7f8f5a;
+    --danger:#d9363e;
+    --ease:cubic-bezier(.22,1,.36,1);
+    --safe-b:env(safe-area-inset-bottom,0px);
+    --display:'Unbounded',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{font-family:'Manrope',system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45;overflow:hidden;-webkit-font-smoothing:antialiased}
+  button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+  input,textarea,select{font:inherit;color:inherit}
+  img{display:block;max-width:100%}
+  .hand{font-family:'Caveat',cursive;font-weight:700;color:var(--accent)}
+
+  .screens{position:relative;height:100%;overflow:hidden}
+  .screen{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;opacity:0;transform:translateX(40px);pointer-events:none;transition:opacity .45s var(--ease),transform .55s var(--ease)}
+  .screen.active{opacity:1;transform:none;pointer-events:auto}
+  .screen.left{transform:translateX(-40px)}
+
+  /* ---------- menu screen ---------- */
+  #s-menu{padding-bottom:calc(110px + var(--safe-b))}
+  .head{padding:16px 16px 6px}
+  .brand{display:flex;align-items:center;justify-content:space-between}
+  .logo{display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:600;font-size:14px}
+  .logo i{font-style:normal;color:var(--accent)}
+  .pill{font-size:12px;font-weight:600;background:var(--surface);padding:6px 12px;border-radius:999px;display:flex;align-items:center;gap:6px}
+  .pill::before{content:"";width:7px;height:7px;border-radius:50%;background:#3fae5a}
+  .pill.closed::before{background:#d9363e}
+  .hello{font-family:var(--display);font-weight:500;font-size:26px;line-height:1.1;letter-spacing:-.03em;margin-top:18px}
+  .hello span{color:var(--accent)}
+  .promo{margin:16px 16px 0;border-radius:22px;overflow:hidden;position:relative;height:150px;background:#d9c2a6}
+  .promo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;animation:zoom 9s var(--ease) forwards}
+  @keyframes zoom{from{transform:scale(1.1)}to{transform:scale(1)}}
+  .promo::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(43,29,20,.75),rgba(43,29,20,0) 75%)}
+  .promo div{position:absolute;z-index:1;left:18px;top:50%;transform:translateY(-50%);color:#fff;max-width:62%}
+  .promo .hand{color:#f3c49b;font-size:22px}
+  .promo b{display:block;font-family:var(--display);font-weight:500;font-size:18px;line-height:1.15;margin-top:2px}
+
+  .cats{position:sticky;top:0;z-index:5;display:flex;gap:8px;overflow-x:auto;padding:14px 16px 10px;background:var(--bg);scrollbar-width:none}
+  .cats::-webkit-scrollbar{display:none}
+  .cat{flex:none;height:40px;padding:0 16px;border-radius:999px;background:var(--surface);font-weight:600;font-size:14px;transition:background .3s,color .3s}
+  .cat.on{background:var(--ink);color:var(--bg)}
+  .sec{padding:0 16px}
+  .sec h2{font-family:var(--display);font-weight:500;font-size:20px;letter-spacing:-.02em;margin:18px 0 10px}
+  .items{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .item{background:var(--surface);border-radius:20px;padding:8px 8px 12px;display:flex;flex-direction:column;position:relative;text-align:left}
+  .item .ph{aspect-ratio:1;border-radius:14px;overflow:hidden;background:var(--surface-2);position:relative}
+  .item .ph img{width:100%;height:100%;object-fit:cover}
+  .item .hit{position:absolute;left:8px;top:8px;background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px}
+  .item b{font-weight:700;font-size:14px;margin:10px 4px 2px;line-height:1.25}
+  .item small{color:var(--muted);font-size:12px;margin:0 4px;line-height:1.3;flex:1}
+  .item .row{display:flex;align-items:center;justify-content:space-between;margin:10px 4px 0;gap:6px}
+  .item .pr{font-weight:700;font-size:14px;white-space:nowrap}
+  .add{width:36px;height:36px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-size:20px;flex:none;transition:transform .3s var(--ease),background .3s}
+  .add:active{transform:scale(.88)}
+  .step{display:flex;align-items:center;background:var(--accent);color:#fff;border-radius:999px;height:36px;flex:none}
+  .step button{width:34px;height:36px;font-size:18px;font-weight:600}
+  .step span{min-width:18px;text-align:center;font-weight:700;font-size:14px}
+  .qbadge{position:absolute;right:14px;top:14px;min-width:24px;height:24px;padding:0 7px;border-radius:999px;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center;box-shadow:0 4px 12px -4px rgba(196,81,47,.8)}
+
+  /* cart bar */
+  .cartbar{position:fixed;left:12px;right:12px;bottom:calc(12px + var(--safe-b));z-index:30;height:60px;border-radius:20px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 10px 0 18px;box-shadow:0 16px 36px -14px rgba(196,81,47,.8);transform:translateY(150%);transition:transform .5s var(--ease)}
+  .cartbar.show{transform:none}
+  .cartbar .l{display:flex;align-items:center;gap:12px;font-weight:700}
+  .cartbar .cnt{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.22);display:grid;place-items:center;font-size:14px}
+  .cartbar .r{background:#fff;color:var(--accent);height:42px;padding:0 16px;border-radius:14px;display:flex;align-items:center;font-weight:700}
+  .cartbar.bump{animation:bump .45s var(--ease)}
+  @keyframes bump{40%{transform:scale(1.05)}}
+  .fly{position:fixed;z-index:40;border-radius:50%;object-fit:cover;pointer-events:none;box-shadow:0 10px 30px -10px rgba(0,0,0,.5)}
+
+  /* option sheet */
+  .shade{position:fixed;inset:0;z-index:50;background:rgba(43,29,20,.45);opacity:0;pointer-events:none;transition:opacity .35s}
+  .shade.on{opacity:1;pointer-events:auto}
+  .sheet{position:fixed;left:0;right:0;bottom:0;z-index:51;background:var(--bg);border-radius:26px 26px 0 0;max-height:88%;overflow-y:auto;transform:translateY(105%);transition:transform .5s var(--ease);padding-bottom:calc(100px + var(--safe-b))}
+  .sheet.on{transform:none}
+  .sheet .grab{width:40px;height:5px;border-radius:5px;background:rgba(43,29,20,.2);margin:10px auto 0}
+  .sheet .ph{margin:12px 16px 0;border-radius:20px;overflow:hidden;aspect-ratio:16/10;background:var(--surface-2)}
+  .sheet .ph img{width:100%;height:100%;object-fit:cover}
+  .sheet h3{font-family:var(--display);font-weight:500;font-size:22px;letter-spacing:-.02em;margin:16px 16px 4px}
+  .sheet p{color:var(--muted);margin:0 16px}
+  .opt{margin:18px 16px 0}
+  .opt h4{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{min-height:42px;padding:6px 14px;border-radius:14px;background:var(--surface);font-weight:600;font-size:14px;border:1.5px solid transparent;text-align:left;transition:border-color .25s,background .25s}
+  .chip small{display:block;font-weight:500;font-size:12px;color:var(--muted)}
+  .chip.on{border-color:var(--accent);background:var(--accent-soft)}
+  .sheet-foot{position:fixed;left:0;right:0;bottom:0;z-index:52;display:flex;gap:10px;padding:12px 16px calc(12px + var(--safe-b));background:linear-gradient(180deg,rgba(246,240,230,0),var(--bg) 30%);transform:translateY(110%);transition:transform .5s var(--ease)}
+  .sheet-foot.on{transform:none}
+  .qty{display:flex;align-items:center;background:var(--surface);border-radius:16px;height:56px}
+  .qty button{width:46px;height:56px;font-size:20px;font-weight:600}
+  .qty span{min-width:22px;text-align:center;font-weight:700}
+  .btn{flex:1;height:56px;border-radius:16px;background:var(--accent);color:#fff;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .2s var(--ease),opacity .3s}
+  .btn:active{transform:scale(.97)}
+  .btn:disabled{opacity:.5}
+
+  /* ---------- checkout ---------- */
+  #s-cart{padding:0 16px calc(110px + var(--safe-b))}
+  .bar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;padding:14px 0 12px;background:var(--bg)}
+  .back{height:36px;padding:0 14px 0 10px;border-radius:999px;background:var(--surface);display:flex;align-items:center;gap:4px;font-size:14px;font-weight:600}
+  .bar h2{font-family:var(--display);font-weight:500;font-size:18px}
+  .bar .clear{margin-left:auto;font-size:13px;color:var(--muted);font-weight:600}
+  .lines{display:flex;flex-direction:column;gap:8px}
+  .line{display:flex;gap:12px;align-items:center;background:var(--surface);border-radius:18px;padding:8px}
+  .line img{width:58px;height:58px;border-radius:12px;object-fit:cover;flex:none}
+  .line .tx{flex:1;min-width:0}
+  .line b{display:block;font-size:14px}
+  .line small{display:block;color:var(--muted);font-size:12px}
+  .line .pr{font-weight:700;font-size:13px;margin-top:2px}
+  .line .step{background:var(--surface-2);color:var(--ink)}
+  .label{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:22px 0 10px;font-weight:600}
+  .seg{display:grid;grid-template-columns:1fr 1fr;background:var(--surface);border-radius:16px;padding:4px;position:relative}
+  .seg button{height:46px;border-radius:12px;font-weight:700;position:relative;z-index:1;transition:color .3s}
+  .seg button.on{color:#fff}
+  .seg i{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);border-radius:12px;background:var(--ink);transition:transform .45s var(--ease)}
+  .seg.right i{transform:translateX(100%)}
+  .field{position:relative;margin-top:10px}
+  .field input,.field textarea,.field select{width:100%;height:54px;border-radius:14px;border:1.5px solid transparent;background:var(--surface);padding:0 16px;font-size:16px;outline:none;transition:border-color .25s;appearance:none;-webkit-appearance:none}
+  .field textarea{height:76px;padding:14px 16px;resize:none}
+  .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent)}
+  .field.err input{border-color:var(--danger);animation:shake .4s}
+  @keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
+  .field .tgbtn{position:absolute;right:8px;top:8px;height:38px;padding:0 12px;border-radius:10px;background:var(--accent-soft);color:var(--accent);font-size:13px;font-weight:700}
+  .field input:has(+ .tgbtn:not([style*="none"])){padding-right:138px}
+  .field.sel::after{content:"";position:absolute;right:20px;top:50%;width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:translateY(-70%) rotate(45deg);pointer-events:none}
+  .pickup{background:var(--surface);border-radius:16px;padding:14px 16px;margin-top:10px;font-size:14px;display:flex;gap:10px;align-items:flex-start}
+  .collapse{overflow:hidden;transition:height .45s var(--ease),opacity .3s}
+  .pays{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .pay{background:var(--surface);border:1.5px solid transparent;border-radius:14px;padding:10px 6px;font-size:13px;font-weight:600;text-align:center;transition:border-color .25s,background .25s}
+  .pay span{display:block;font-size:20px;margin-bottom:2px}
+  .pay.on{border-color:var(--accent);background:var(--accent-soft)}
+  .totals{background:var(--surface);border-radius:18px;padding:6px 16px;margin-top:22px}
+  .totals div{display:flex;justify-content:space-between;padding:10px 0;font-size:14px;border-bottom:1px solid var(--line)}
+  .totals div:last-child{border:0;font-weight:700;font-size:16px}
+  .totals .free{color:var(--sage);font-weight:700}
+  .hint{font-size:12px;color:var(--muted);text-align:center;margin-top:10px}
+  .foot{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:12px 16px calc(12px + var(--safe-b));background:linear-gradient(180deg,rgba(246,240,230,0),var(--bg) 30%);transform:translateY(110%);transition:transform .45s var(--ease)}
+  .foot.show{transform:none}
+
+  /* ---------- done ---------- */
+  #s-done{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px 20px}
+  .cup{width:130px;height:130px;margin-bottom:18px}
+  .cup .steam path{stroke-dasharray:40;stroke-dashoffset:40;animation:steam 2.4s ease-in-out infinite}
+  .cup .steam path:nth-child(2){animation-delay:.4s}
+  .cup .steam path:nth-child(3){animation-delay:.8s}
+  @keyframes steam{0%{stroke-dashoffset:40;opacity:0}40%{opacity:1}100%{stroke-dashoffset:-40;opacity:0}}
+  #s-done.active .cup{animation:pop .8s var(--ease)}
+  @keyframes pop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:none}}
+  #s-done h2{font-family:var(--display);font-weight:500;font-size:26px;letter-spacing:-.03em}
+  #s-done p{color:var(--muted);margin-top:8px;max-width:300px}
+  #s-done .totals{width:100%;text-align:left}
+  .conf{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}
+  .conf i{position:absolute;top:-12px;width:8px;height:12px;border-radius:2px;animation:fall linear forwards}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+</style>
+</head>
+<body>
+
+<div class="screens">
+
+  <!-- MENU -->
+  <section class="screen active" id="s-menu">
+    <div class="head">
+      <div class="brand">
+        <div class="logo"><svg width="26" height="26" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="15" fill="#c4512f"/><path d="M9 14h12v3a6 6 0 0 1-12 0v-3Z" fill="#fffaf2"/><path d="M21 15h1.5a2 2 0 0 1 0 4H21" stroke="#fffaf2" stroke-width="1.6"/><path d="M12 8.5c0 1.2 1 1.2 1 2.4M16 8c0 1.2 1 1.2 1 2.4" stroke="#fffaf2" stroke-width="1.4" stroke-linecap="round"/></svg>Crumb <i>&amp;</i> Crema</div>
+        <span class="pill" id="openPill">Открыто до 23:00</span>
+      </div>
+      <h1 class="hello" id="hello">Доброе утро!<br><span>Что закажем?</span></h1>
+    </div>
+    <div class="promo">
+      <img src="https://images.unsplash.com/photo-1623334044303-241021148842?auto=format&fit=crop&w=900&h=400&q=70" alt="">
+      <div><span class="hand">только сегодня</span><b>Бесплатная доставка от 50 000 сум</b></div>
+    </div>
+    <nav class="cats" id="cats"></nav>
+    <div id="sections"></div>
+  </section>
+
+  <!-- CART / CHECKOUT -->
+  <section class="screen" id="s-cart">
+    <div class="bar">
+      <button class="back" id="backBtn"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3 5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Меню</button>
+      <h2>Корзина</h2>
+      <button class="clear" id="clearBtn">Очистить</button>
+    </div>
+    <div class="lines" id="lines"></div>
+
+    <div class="label">Как получить</div>
+    <div class="seg" id="modeSeg"><i></i><button class="on" data-m="delivery">🛵 Доставка</button><button data-m="pickup">🥡 Самовывоз</button></div>
+    <div class="collapse" id="deliveryBox">
+      <div class="field" id="fAddr"><input id="address" placeholder="Улица, дом, квартира" autocomplete="street-address" maxlength="120"></div>
+      <div class="field"><input id="addrNote" placeholder="Подъезд, этаж, ориентир (необязательно)" maxlength="80"></div>
+    </div>
+    <div class="collapse" id="pickupBox" style="height:0;opacity:0">
+      <div class="pickup"><span>📍</span><span><b>ул. Навои, 14</b> · м. Алишера Навои<br><span style="color:var(--muted)">Заберите заказ у бара — назовите номер заказа</span></span></div>
+    </div>
+
+    <div class="label">Когда</div>
+    <div class="field sel"><select id="when"></select></div>
+
+    <div class="label">Оплата</div>
+    <div class="pays" id="pays">
+      <button class="pay on" data-p="Наличными"><span>💵</span>Наличными</button>
+      <button class="pay" data-p="Картой при получении"><span>💳</span>Картой</button>
+      <button class="pay" data-p="Click / Payme"><span>📲</span>Click / Payme</button>
+    </div>
+
+    <div class="label">Контакты</div>
+    <div class="field" id="fName"><input id="name" placeholder="Имя" autocomplete="name" maxlength="40"><button class="tgbtn" id="tgName" type="button">👤 Из Telegram</button></div>
+    <div class="field" id="fPhone"><input id="phone" type="tel" inputmode="tel" placeholder="+998 __ ___-__-__" autocomplete="tel"><button class="tgbtn" id="tgPhone" type="button">📱 Из Telegram</button></div>
+    <div class="field"><textarea id="comment" placeholder="Комментарий к заказу: без сахара, приборы и т.д." maxlength="200"></textarea></div>
+
+    <div class="totals" id="totals"></div>
+    <p class="hint" id="hint"></p>
+  </section>
+
+  <!-- DONE -->
+  <section class="screen" id="s-done">
+    <svg class="cup" viewBox="0 0 130 130" fill="none">
+      <circle cx="65" cy="65" r="62" fill="#f6dfd4"/>
+      <g class="steam" stroke="#c4512f" stroke-width="4" stroke-linecap="round"><path d="M50 40c-6-8 6-12 0-20"/><path d="M65 40c-6-8 6-12 0-20"/><path d="M80 40c-6-8 6-12 0-20"/></g>
+      <path d="M36 52h58v18a29 29 0 0 1-58 0V52Z" fill="#c4512f"/>
+      <path d="M94 58h6a10 10 0 0 1 0 20h-8" stroke="#c4512f" stroke-width="6"/>
+      <path d="M30 104h70" stroke="#2b1d14" stroke-width="5" stroke-linecap="round"/>
+    </svg>
+    <h2>Заказ принят!</h2>
+    <p id="doneSub">Подтверждение и статус заказа придут в чат с ботом</p>
+    <div class="totals" id="doneTotals"></div>
+  </section>
+</div>
+
+<div class="cartbar" id="cartbar"><span class="l"><span class="cnt" id="cartCnt">0</span>Корзина</span><span class="r" id="cartSum">0 сум</span></div>
+<div class="foot" id="foot"><button class="btn" id="orderBtn">Оформить заказ</button></div>
+
+<div class="shade" id="shade"></div>
+<div class="sheet" id="sheet"></div>
+<div class="sheet-foot" id="sheetFoot">
+  <div class="qty"><button id="sMinus">−</button><span id="sQty">1</span><button id="sPlus">+</button></div>
+  <button class="btn" id="sAdd">Добавить</button>
+</div>
+
+<script>
+(() => {
+  // initData is empty when opened from a keyboard button, so detect Telegram by platform
+  const W = window.Telegram && Telegram.WebApp;
+  const tg = W && W.platform && W.platform !== 'unknown' ? W : null;
+  const params = new URLSearchParams(location.search);
+  const haptic = (type, v) => { try { tg && (type === 'n' ? tg.HapticFeedback.notificationOccurred(v) : type === 's' ? tg.HapticFeedback.selectionChanged() : tg.HapticFeedback.impactOccurred(v)); } catch (e) {} };
+  const fmt = n => n.toLocaleString('ru-RU').replace(/ /g, ' ') + ' сум';
+  const $ = id => document.getElementById(id);
+
+  if (tg) {
+    tg.ready();
+    tg.expand();
+    try { tg.setHeaderColor('#f6f0e6'); tg.setBackgroundColor('#f6f0e6'); } catch (e) {}
+    if (tg.isVersionAtLeast && tg.isVersionAtLeast('7.7')) tg.disableVerticalSwipes();
+    tg.BackButton.onClick(() => { if ($('sheet').classList.contains('on')) closeSheet(); else if (cur === 's-cart') go('s-menu'); });
+  }
+
+  /* ---------- greeting, hours ---------- */
+  const u = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
+  const tgName = (u && [u.first_name, u.last_name].filter(Boolean).join(' ')) || params.get('name') || '';
+  const h = new Date().getHours();
+  const part = h < 12 ? 'Доброе утро' : h < 18 ? 'Добрый день' : 'Добрый вечер';
+  $('hello').innerHTML = `${part}${tgName ? ', ' + tgName.split(' ')[0] : ''}!<br><span>Что закажем?</span>`;
+  const OPEN = 8, CLOSE = 23;
+  const isOpen = h >= OPEN && h < CLOSE;
+  if (!isOpen) { $('openPill').textContent = 'Предзаказ · откроемся в 8:00'; $('openPill').classList.add('closed'); }
+
+  /* ---------- menu ---------- */
+  const IMG = (id, w = 400, hh = w) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&h=${hh}&q=70`;
+  const SIZE = { name: 'Размер', list: [['S', 0, '250 мл'], ['M', 6000, '350 мл'], ['L', 12000, '450 мл']] };
+  const MILK = { name: 'Молоко', list: [['Обычное', 0], ['Овсяное', 6000], ['Кокосовое', 6000], ['Безлактозное', 4000]] };
+  const SYRUP = { name: 'Сироп', list: [['Без сиропа', 0], ['Ваниль', 4000], ['Карамель', 4000], ['Лесной орех', 4000]] };
+  const CATS = [
+    { id: 'coffee', name: '☕ Кофе', items: [
+      { id: 'cap', n: 'Капучино', d: 'Двойной эспрессо и шелковистая пена', p: 32000, img: '1760306081298-93e10f2be897', hit: 1, opts: [SIZE, MILK, SYRUP] },
+      { id: 'flat', n: 'Флэт уайт', d: 'Больше кофе, меньше молока', p: 35000, img: '1761783768352-e7f42bfa9988', opts: [MILK] },
+      { id: 'latte', n: 'Латте', d: 'Мягкий и молочный', p: 34000, img: '1509042239860-f550ce710b93', opts: [SIZE, MILK, SYRUP] },
+      { id: 'raf', n: 'Раф ванильный', d: 'Сливки, эспрессо и ваниль', p: 38000, img: '1512568400610-62da28bc8a13', opts: [SIZE] },
+      { id: 'ice', n: 'Айс-латте', d: 'Эспрессо, холодное молоко, лёд', p: 36000, img: '1761673930163-8d3d6d73cd7a', opts: [MILK, SYRUP] },
+      { id: 'amer', n: 'Американо', d: 'Эспрессо и горячая вода', p: 24000, img: '1514432324607-a09d9b4aefdd', opts: [SIZE] }
+    ]},
+    { id: 'drinks', name: '🍋 Не кофе', items: [
+      { id: 'matcha', n: 'Матча латте', d: 'Церемониальная матча', p: 42000, img: '1766426910014-63a302fa137e', hit: 1, opts: [SIZE, MILK] },
+      { id: 'imatcha', n: 'Айс-матча', d: 'Матча, молоко и лёд', p: 44000, img: '1749280447307-31a68eb38673', opts: [MILK] },
+      { id: 'lemon', n: 'Лимонад', d: 'Лимон, мята, содовая', p: 30000, img: '1523677011781-c91d1bbe2f9e' },
+      { id: 'cold', n: 'Колд брю', d: '18 часов холодной экстракции', p: 38000, img: '1771210849472-84a07b2e793a' }
+    ]},
+    { id: 'bakery', name: '🥐 Выпечка', items: [
+      { id: 'crois', n: 'Круассан', d: 'Французское сливочное масло', p: 22000, img: '1681218079567-35aef7c8e7e4', hit: 1 },
+      { id: 'almond', n: 'Миндальный круассан', d: 'С франжипаном', p: 32000, img: '1763207291761-e27bb059d851' },
+      { id: 'cinna', n: 'Синнабон', d: 'Корица и крем-чиз', p: 29000, img: '1786052596281-63149bee7ad5' },
+      { id: 'cheese', n: 'Чизкейк Нью-Йорк', d: 'Сливочный, на песочной основе', p: 38000, img: '1774988867972-98caecc776d8' }
+    ]},
+    { id: 'breakfast', name: '🍳 Завтраки', items: [
+      { id: 'panc', n: 'Панкейки', d: 'Голубика и кленовый сироп', p: 48000, img: '1650134973809-d8c3a2da59ba', hit: 1 },
+      { id: 'avo', n: 'Авокадо-тост', d: 'Закваска, авокадо, пашот', p: 55000, img: '1687276287139-88f7333c8ca4' },
+      { id: 'banana', n: 'Банановые панкейки', d: 'Карамельный банан и мёд', p: 45000, img: '1528207776546-365bb710ee93' },
+      { id: 'combo', n: 'Завтрак + кофе', d: 'Любой завтрак и капучино', p: 68000, img: '1600326145552-327f74b9c189' }
+    ]}
+  ];
+  const ITEMS = Object.fromEntries(CATS.flatMap(c => c.items).map(i => [i.id, i]));
+
+  /* ---------- cart: key = item id + chosen options ---------- */
+  const cart = new Map(); // key -> {id, opts:[...labels], extra, qty}
+  const unit = l => ITEMS[l.id].p + l.extra;
+  const count = () => [...cart.values()].reduce((s, l) => s + l.qty, 0);
+  const subtotal = () => [...cart.values()].reduce((s, l) => s + unit(l) * l.qty, 0);
+  const itemQty = id => [...cart.values()].filter(l => l.id === id).reduce((s, l) => s + l.qty, 0);
+  function addLine(id, opts = [], extra = 0, qty = 1) {
+    const key = id + '|' + opts.join('/');
+    const l = cart.get(key) || { id, opts, extra, qty: 0 };
+    l.qty += qty;
+    cart.set(key, l);
+    refresh();
+  }
+  function changeLine(key, d) {
+    const l = cart.get(key);
+    if (!l) return;
+    l.qty += d;
+    if (l.qty <= 0) cart.delete(key);
+    refresh();
+  }
+
+  /* ---------- render menu ---------- */
+  $('cats').innerHTML = CATS.map((c, i) => `<button class="cat${i ? '' : ' on'}" data-c="${c.id}">${c.name}</button>`).join('');
+  $('sections').innerHTML = CATS.map(c => `<section class="sec" id="sec-${c.id}"><h2>${c.name.split(' ').slice(1).join(' ')}</h2><div class="items">` +
+    c.items.map(i => `<div class="item" data-id="${i.id}"><div class="ph"><img src="${IMG(i.img)}" alt="" loading="lazy">${i.hit ? '<span class="hit">Хит</span>' : ''}</div><b>${i.n}</b><small>${i.d}</small><div class="row"><span class="pr">${i.opts ? 'от ' : ''}${fmt(i.p)}</span><span class="ctl"></span></div></div>`).join('') +
+    '</div></section>').join('');
+
+  function renderControls() {
+    document.querySelectorAll('.item').forEach(el => {
+      const it = ITEMS[el.dataset.id];
+      const q = itemQty(it.id);
+      const ctl = el.querySelector('.ctl');
+      let badge = el.querySelector('.qbadge');
+      if (it.opts) {
+        ctl.innerHTML = '<button class="add" data-act="open">+</button>';
+        if (q) { if (!badge) { badge = document.createElement('span'); badge.className = 'qbadge'; el.appendChild(badge); } badge.textContent = q; }
+        else if (badge) badge.remove();
+      } else {
+        ctl.innerHTML = q ? `<span class="step"><button data-act="dec">−</button><span>${q}</span><button data-act="inc">+</button></span>` : '<button class="add" data-act="inc">+</button>';
+      }
+    });
+  }
+  $('sections').addEventListener('click', e => {
+    const btn = e.target.closest('button[data-act]');
+    const el = e.target.closest('.item');
+    if (!el) return;
+    const it = ITEMS[el.dataset.id];
+    if (!btn || btn.dataset.act === 'open') { openSheet(it); return; }
+    if (btn.dataset.act === 'inc') { flyToCart(el.querySelector('img')); addLine(it.id); haptic('i', 'light'); }
+    if (btn.dataset.act === 'dec') { changeLine(it.id + '|', -1); haptic('i', 'light'); }
+  });
+
+  // categories: tap to scroll, highlight while scrolling
+  const menuScreen = $('s-menu');
+  $('cats').addEventListener('click', e => {
+    const b = e.target.closest('.cat');
+    if (!b) return;
+    const sec = $('sec-' + b.dataset.c);
+    menuScreen.scrollTo({ top: sec.offsetTop - 58, behavior: 'smooth' });
+    haptic('s');
+  });
+  menuScreen.addEventListener('scroll', () => {
+    let active = CATS[0].id;
+    CATS.forEach(c => { if ($('sec-' + c.id).getBoundingClientRect().top < 140) active = c.id; });
+    document.querySelectorAll('.cat').forEach(b => {
+      const on = b.dataset.c === active;
+      if (on && !b.classList.contains('on')) b.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+      b.classList.toggle('on', on);
+    });
+  }, { passive: true });
+
+  /* ---------- fly-to-cart animation ---------- */
+  function flyToCart(img) {
+    if (!img) return;
+    const r = img.getBoundingClientRect();
+    const bar = $('cartbar');
+    const wasHidden = !bar.classList.contains('show');
+    const target = { x: 40, y: innerHeight - 60 };
+    if (!wasHidden) { const b = bar.querySelector('.cnt').getBoundingClientRect(); target.x = b.left + b.width / 2; target.y = b.top + b.height / 2; }
+    const f = img.cloneNode();
+    f.className = 'fly';
+    Object.assign(f.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' });
+    document.body.appendChild(f);
+    const dx = target.x - (r.left + r.width / 2), dy = target.y - (r.top + r.height / 2);
+    f.animate([
+      { transform: 'translate(0,0) scale(1)', opacity: 1, borderRadius: '14px' },
+      { transform: `translate(${dx * .5}px, ${dy * .5 - 80}px) scale(.45)`, opacity: 1, borderRadius: '50%', offset: .55 },
+      { transform: `translate(${dx}px, ${dy}px) scale(.12)`, opacity: .6, borderRadius: '50%' }
+    ], { duration: 650, easing: 'cubic-bezier(.5,0,.5,1)' }).onfinish = () => {
+      f.remove();
+      bar.classList.remove('bump'); void bar.offsetWidth; bar.classList.add('bump');
+    };
+  }
+
+  /* ---------- option sheet ---------- */
+  let sheetItem = null, sheetQty = 1, sheetSel = [];
+  function openSheet(it) {
+    sheetItem = it; sheetQty = 1;
+    sheetSel = (it.opts || []).map(() => 0);
+    const sheet = $('sheet');
+    sheet.innerHTML = `<div class="grab"></div><div class="ph"><img src="${IMG(it.img, 800, 500)}" alt=""></div><h3>${it.n}</h3><p>${it.d}</p>` +
+      (it.opts || []).map((o, oi) => `<div class="opt"><h4>${o.name}</h4><div class="chips">` +
+        o.list.map((c, ci) => `<button class="chip${ci ? '' : ' on'}" data-o="${oi}" data-c="${ci}">${c[0]}${c[2] ? ` <small>${c[2]}</small>` : ''}${c[1] ? `<small>+${fmt(c[1])}</small>` : ''}</button>`).join('') +
+      '</div></div>').join('');
+    sheet.scrollTop = 0;
+    sheet.querySelectorAll('.chip').forEach(ch => ch.onclick = () => {
+      const oi = +ch.dataset.o;
+      sheetSel[oi] = +ch.dataset.c;
+      sheet.querySelectorAll(`.chip[data-o="${oi}"]`).forEach(x => x.classList.toggle('on', x === ch));
+      haptic('s');
+      updSheet();
+    });
+    updSheet();
+    ['shade', 'sheet', 'sheetFoot'].forEach(id => $(id).classList.add('on'));
+    if (tg) tg.BackButton.show();
+  }
+  function sheetExtra() { return (sheetItem.opts || []).reduce((s, o, oi) => s + o.list[sheetSel[oi]][1], 0); }
+  function updSheet() {
+    $('sQty').textContent = sheetQty;
+    $('sAdd').textContent = `Добавить · ${fmt((sheetItem.p + sheetExtra()) * sheetQty)}`;
+  }
+  function closeSheet() {
+    ['shade', 'sheet', 'sheetFoot'].forEach(id => $(id).classList.remove('on'));
+    if (tg && cur === 's-menu') tg.BackButton.hide();
+  }
+  $('shade').onclick = closeSheet;
+  $('sMinus').onclick = () => { if (sheetQty > 1) { sheetQty--; updSheet(); haptic('s'); } };
+  $('sPlus').onclick = () => { if (sheetQty < 20) { sheetQty++; updSheet(); haptic('s'); } };
+  $('sAdd').onclick = () => {
+    const labels = (sheetItem.opts || []).map((o, oi) => o.list[sheetSel[oi]][0]).filter((l, i) => !(i > 0 && /^(Обычное|Без сиропа)$/.test(l)));
+    const img = $('sheet').querySelector('.ph img');
+    closeSheet();
+    flyToCart(img);
+    addLine(sheetItem.id, labels, sheetExtra(), sheetQty);
+    haptic('n', 'success');
+  };
+
+  /* ---------- navigation ---------- */
+  let cur = 's-menu';
+  function go(id) {
+    const order = ['s-menu', 's-cart', 's-done'];
+    const from = $(cur), to = $(id);
+    from.classList.remove('active');
+    from.classList.toggle('left', order.indexOf(id) > order.indexOf(cur));
+    to.classList.remove('left');
+    to.classList.add('active');
+    cur = id;
+    if (id === 's-cart') { to.scrollTop = 0; renderCart(); }
+    if (tg) id === 's-cart' ? tg.BackButton.show() : tg.BackButton.hide();
+    refresh();
+  }
+  $('cartbar').onclick = () => { haptic('i', 'medium'); go('s-cart'); };
+  $('backBtn').onclick = () => go('s-menu');
+  $('clearBtn').onclick = () => { cart.clear(); haptic('n', 'warning'); go('s-menu'); };
+
+  /* ---------- checkout ---------- */
+  const FREE_FROM = 50000, DELIVERY_FEE = 10000;
+  let mode = 'delivery', payment = 'Наличными';
+  const fee = () => mode === 'delivery' && subtotal() < FREE_FROM ? DELIVERY_FEE : 0;
+
+  function renderCart() {
+    $('lines').innerHTML = [...cart.entries()].map(([k, l]) => {
+      const it = ITEMS[l.id];
+      return `<div class="line"><img src="${IMG(it.img, 160)}" alt=""><div class="tx"><b>${it.n}</b>${l.opts.length ? `<small>${l.opts.join(' · ')}</small>` : ''}<div class="pr">${fmt(unit(l) * l.qty)}</div></div>
+        <span class="step"><button data-k="${encodeURIComponent(k)}" data-d="-1">−</button><span>${l.qty}</span><button data-k="${encodeURIComponent(k)}" data-d="1">+</button></span></div>`;
+    }).join('');
+    renderTotals('totals');
+  }
+  $('lines').addEventListener('click', e => {
+    const b = e.target.closest('button[data-k]');
+    if (!b) return;
+    changeLine(decodeURIComponent(b.dataset.k), +b.dataset.d);
+    haptic('i', 'light');
+    if (!cart.size) return go('s-menu');
+    renderCart();
+  });
+  function renderTotals(id) {
+    const f = fee();
+    $(id).innerHTML = `<div><span>Товары (${count()})</span><span>${fmt(subtotal())}</span></div>` +
+      (mode === 'delivery' ? `<div><span>Доставка</span><span class="${f ? '' : 'free'}">${f ? fmt(f) : 'Бесплатно'}</span></div>` : '') +
+      `<div><span>Итого</span><span>${fmt(subtotal() + f)}</span></div>`;
+    if (id === 'totals') {
+      const left = FREE_FROM - subtotal();
+      $('hint').textContent = mode === 'delivery' && left > 0 ? `Добавьте ещё на ${fmt(left)} — доставка будет бесплатной 🛵` : '';
+      $('orderBtn').textContent = `Оформить заказ · ${fmt(subtotal() + f)}`;
+    }
+  }
+
+  // delivery / pickup switch with collapsing address block
+  const collapse = (el, open) => {
+    if (open) { el.style.height = el.scrollHeight + 'px'; el.style.opacity = 1; setTimeout(() => { if (el.style.opacity === '1') el.style.height = 'auto'; }, 460); }
+    else { el.style.height = el.scrollHeight + 'px'; el.offsetHeight; el.style.height = '0px'; el.style.opacity = 0; }
+  };
+  $('modeSeg').addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b || b.dataset.m === mode) return;
+    mode = b.dataset.m;
+    haptic('s');
+    $('modeSeg').classList.toggle('right', mode === 'pickup');
+    $('modeSeg').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+    collapse($('deliveryBox'), mode === 'delivery');
+    collapse($('pickupBox'), mode === 'pickup');
+    renderTotals('totals');
+  });
+  $('pays').addEventListener('click', e => {
+    const b = e.target.closest('.pay');
+    if (!b) return;
+    payment = b.dataset.p;
+    $('pays').querySelectorAll('.pay').forEach(x => x.classList.toggle('on', x === b));
+    haptic('s');
+  });
+
+  // time options: ASAP (when open) + 30-minute slots today
+  (() => {
+    const sel = $('when');
+    const opts = isOpen ? ['Как можно скорее'] : [];
+    const now = new Date();
+    let m = Math.max(now.getHours() * 60 + now.getMinutes() + 45, OPEN * 60);
+    m = Math.ceil(m / 30) * 30;
+    for (; m <= (CLOSE * 60 - 30); m += 30) opts.push(`Сегодня к ${String(m / 60 | 0).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`);
+    if (opts.length < 3) ['08:30', '09:00', '09:30', '10:00'].forEach(t => opts.push(`Завтра к ${t}`));
+    sel.innerHTML = opts.map(o => `<option>${o}</option>`).join('');
+  })();
+
+  // contacts: name and phone from Telegram
+  const nameInput = $('name'), tgNameBtn = $('tgName'), phone = $('phone');
+  if (tgName) {
+    nameInput.value = tgName;
+    tgNameBtn.style.display = 'none';
+    nameInput.addEventListener('input', () => { tgNameBtn.style.display = nameInput.value.trim() === tgName ? 'none' : ''; });
+    tgNameBtn.onclick = () => { nameInput.value = tgName; tgNameBtn.style.display = 'none'; $('fName').classList.remove('err'); haptic('s'); };
+  } else tgNameBtn.style.display = 'none';
+  function maskPhone(v) {
+    let d = v.replace(/\D/g, '');
+    if (!d.startsWith('998')) d = '998' + d.replace(/^998?/, '');
+    d = d.slice(0, 12);
+    const p = [d.slice(0, 3), d.slice(3, 5), d.slice(5, 8), d.slice(8, 10), d.slice(10, 12)];
+    return '+' + p[0] + (p[1] ? ' ' + p[1] : '') + (p[2] ? ' ' + p[2] : '') + (p[3] ? '-' + p[3] : '') + (p[4] ? '-' + p[4] : '');
+  }
+  phone.addEventListener('focus', () => { if (!phone.value) phone.value = '+998 '; });
+  phone.addEventListener('input', () => { phone.value = maskPhone(phone.value); $('fPhone').classList.remove('err'); });
+  nameInput.addEventListener('input', () => $('fName').classList.remove('err'));
+  $('address').addEventListener('input', () => $('fAddr').classList.remove('err'));
+  const tgPhone = $('tgPhone');
+  if (!tg || !tg.requestContact || !tg.isVersionAtLeast('6.9')) tgPhone.style.display = 'none';
+  tgPhone.onclick = () => tg.requestContact((ok, res) => {
+    const num = ok && res && res.responseUnsafe && res.responseUnsafe.contact && res.responseUnsafe.contact.phone_number;
+    if (num) { phone.value = maskPhone(num); haptic('n', 'success'); }
+  });
+
+  /* ---------- submit ---------- */
+  $('orderBtn').onclick = () => {
+    const name = nameInput.value.trim(), digits = phone.value.replace(/\D/g, ''), address = $('address').value.trim();
+    let bad = false;
+    if (mode === 'delivery' && address.length < 5) { $('fAddr').classList.add('err'); bad = true; }
+    if (name.length < 2) { $('fName').classList.add('err'); bad = true; }
+    if (digits.length !== 12) { $('fPhone').classList.add('err'); bad = true; }
+    if (bad) { haptic('n', 'error'); return; }
+
+    // compact payload: Telegram limits sendData to 4096 bytes
+    const payload = {
+      items: [...cart.values()].map(l => ({ n: ITEMS[l.id].n, o: l.opts.join(' · '), q: l.qty, p: unit(l) })),
+      mode, address: mode === 'delivery' ? [address, $('addrNote').value.trim()].filter(Boolean).join(', ') : '',
+      when: $('when').value, payment, name, phone: phone.value, comment: $('comment').value.trim()
+    };
+    renderTotals('doneTotals');
+    haptic('n', 'success');
+    go('s-done');
+    confetti();
+    if (tg) {
+      tg.BackButton.hide();
+      setTimeout(() => {
+        try { tg.sendData(JSON.stringify(payload)); }
+        catch (e) { $('doneSub').textContent = 'Откройте меню через кнопку «🥐 Меню и заказ» в чате с ботом'; }
+        // sendData closes the app; if we are still here, the launch did not support it
+        setTimeout(() => { $('doneSub').textContent = 'Не удалось отправить заказ. Откройте меню кнопкой «🥐 Меню и заказ» внизу чата.'; }, 2500);
+      }, 1300);
+    } else {
+      $('doneSub').textContent = 'Демо-режим: в Telegram заказ уйдёт в чат с ботом';
+    }
+  };
+
+  function refresh() {
+    renderControls();
+    const n = count();
+    $('cartCnt').textContent = n;
+    $('cartSum').textContent = fmt(subtotal());
+    $('cartbar').classList.toggle('show', n > 0 && cur === 's-menu');
+    $('foot').classList.toggle('show', cur === 's-cart');
+  }
+
+  function confetti() {
+    const box = document.createElement('div');
+    box.className = 'conf';
+    const colors = ['#c4512f', '#e7a36b', '#7f8f5a', '#2b1d14', '#f6dfd4'];
+    for (let k = 0; k < 60; k++) {
+      const i = document.createElement('i');
+      i.style.left = Math.random() * 100 + '%';
+      i.style.background = colors[k % colors.length];
+      i.style.animationDuration = 1.6 + Math.random() * 1.6 + 's';
+      i.style.animationDelay = Math.random() * .5 + 's';
+      box.appendChild(i);
+    }
+    document.body.appendChild(box);
+    setTimeout(() => box.remove(), 4000);
+  }
+
+  refresh();
+})();
+</script>
+</body>
+</html>
